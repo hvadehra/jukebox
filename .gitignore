@@ -1,0 +1,28 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+
+# Intellij
+.idea/*
+*/.idea/*
+*/*.iml
+*.iml
+*.iws
+*.ipr
+!codeStyleSettings.xml
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
+*.log
+*.log.*
+
+#Misc
+*.mp3
