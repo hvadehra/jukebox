@@ -2,7 +2,6 @@ package org.melocine;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableMap;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
@@ -27,30 +26,31 @@ public class Player {
     private static final int PROGRESS_WIDTH = 100;
     private final List<File> nowPlaying;
     private File currentPlaying;
+    private MediaPlayer mediaPlayer;
+    private final LastFM lastFM;
 
-    public Player() {
+    public Player(LastFM lastFM) {
+        this.lastFM = lastFM;
         this.nowPlaying = new ArrayList<File>();
     }
 
     private void play(){
         String path = currentPlaying.toURI().toASCIIString();
-        final Media media = new Media(path);
-        final MediaPlayer mediaPlayer = new MediaPlayer(media);
+        Media media = new Media(path);
+        mediaPlayer = new MediaPlayer(media);
         mediaPlayer.setOnEndOfMedia(new Runnable() {
             @Override
             public void run() {
-                System.err.println("Disposing");
-                mediaPlayer.dispose();
-                System.out.print("\r" + StringUtils.repeat(" ", 125));
-                currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
-                play();
+                next();
             }
         });
         mediaPlayer.setOnReady(new Runnable() {
             @Override
             public void run() {
-                ObservableMap<String,Object> metadata = mediaPlayer.getMedia().getMetadata();
-                System.out.println("\r" + (1+nowPlaying.indexOf(currentPlaying)) + ". " + metadata.get("artist") + " - " + metadata.get("title") + "  [" + metadata.get("album") + "] [" + formatTime(mediaPlayer.getMedia().getDuration()) + "]");
+                Duration duration = mediaPlayer.getMedia().getDuration();
+                MetaData metaData = new MetaData(mediaPlayer.getMedia().getMetadata(), duration.toSeconds());
+                System.out.println("\r" + (1 + nowPlaying.indexOf(currentPlaying)) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(duration) + "]");
+                lastFM.setNowPlaying(metaData);
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
@@ -59,14 +59,25 @@ public class Player {
                 Double oldValueSeconds = oldValue.toSeconds();
                 Double newValueSeconds = newValue.toSeconds();
                 if (newValueSeconds.intValue() != oldValueSeconds.intValue()){
-                    Double duration = media.getDuration().toSeconds();
+                    Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
                     String done = StringUtils.repeat("=", (int) ((newValueSeconds / duration) * PROGRESS_WIDTH));
                     String remaining = StringUtils.repeat("-", (int)(((duration- newValueSeconds)/duration) * PROGRESS_WIDTH));
                     System.out.print("\r[" + done + "[" + formatTime(newValue) + "]" + remaining + "]");
+                    if (newValueSeconds.intValue() == duration.intValue()/2) {
+                        lastFM.scrobble(new MetaData(mediaPlayer.getMedia().getMetadata(), duration));
+                    }
                 }
             }
         });
         mediaPlayer.play();
+    }
+
+    public void next() {
+        System.err.println("Disposing");
+        mediaPlayer.dispose();
+        System.out.print("\r" + StringUtils.repeat(" ", 125));
+        currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
+        play();
     }
 
     private String formatTime(Duration duration) {

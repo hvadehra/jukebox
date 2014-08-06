@@ -30,9 +30,10 @@ public class App extends Application {
                 DirectoryFileFilter.DIRECTORY
         );
         System.err.println("Found " + files.size() + " tracks.");
-        final Player player = new Player();
+        final Player player = new Player(new LastFM("03fe03dd08f9c567a80de6dfe813d48c", "b5118d16bfc5a2d51d1bcb9779054fcc", "2l0a1s2t0f6m0", "thecinephile"));
         List<File> playList = buildPlayList(files);
         player.playAll(playList);
+        new KeyListener(player);
     }
 
     private List<File> buildPlayList(Collection<File> files) {
