@@ -9,6 +9,8 @@ import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
@@ -23,12 +25,15 @@ import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
 public class Player {
 
     private static final int PROGRESS_WIDTH = 100;
+    private final List<File> nowPlaying;
+    private File currentPlaying;
 
     public Player() {
+        this.nowPlaying = new ArrayList<File>();
     }
 
-    private void play(final File file, final int n, final Runnable endOfMediaCallBack){
-        String path = file.toURI().toASCIIString();
+    private void play(){
+        String path = currentPlaying.toURI().toASCIIString();
         final Media media = new Media(path);
         final MediaPlayer mediaPlayer = new MediaPlayer(media);
         mediaPlayer.setOnEndOfMedia(new Runnable() {
@@ -36,16 +41,16 @@ public class Player {
             public void run() {
                 System.err.println("Disposing");
                 mediaPlayer.dispose();
-                System.err.println("Running callback");
                 System.out.print("\r" + StringUtils.repeat(" ", 125));
-                endOfMediaCallBack.run();
+                currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
+                play();
             }
         });
         mediaPlayer.setOnReady(new Runnable() {
             @Override
             public void run() {
                 ObservableMap<String,Object> metadata = mediaPlayer.getMedia().getMetadata();
-                System.out.println("\r" + n + ". " + metadata.get("artist") + " - " + metadata.get("title") + "  [" + metadata.get("album") + "] [" + formatTime(mediaPlayer.getMedia().getDuration()) + "]");
+                System.out.println("\r" + (1+nowPlaying.indexOf(currentPlaying)) + ". " + metadata.get("artist") + " - " + metadata.get("title") + "  [" + metadata.get("album") + "] [" + formatTime(mediaPlayer.getMedia().getDuration()) + "]");
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
@@ -56,7 +61,7 @@ public class Player {
                 if (newValueSeconds.intValue() != oldValueSeconds.intValue()){
                     Double duration = media.getDuration().toSeconds();
                     String done = StringUtils.repeat("=", (int) ((newValueSeconds / duration) * PROGRESS_WIDTH));
-                    String remaining = StringUtils.repeat("-", (int)(((duration-newValueSeconds)/duration) * PROGRESS_WIDTH));
+                    String remaining = StringUtils.repeat("-", (int)(((duration- newValueSeconds)/duration) * PROGRESS_WIDTH));
                     System.out.print("\r[" + done + "[" + formatTime(newValue) + "]" + remaining + "]");
                 }
             }
@@ -68,24 +73,12 @@ public class Player {
         return formatDuration(Long.valueOf(String.valueOf(Double.valueOf(duration.toMillis()).intValue())), "mm:ss");
     }
 
-    private void playAll(final List<File> files, final int n) {
+    public void playAll(final Collection<File> files) {
         System.err.println("Playing " + files.size());
-        if (files.isEmpty()) {
-            System.exit(1);
-        }
-        File file = files.get(0);
-        play(file, n, new Runnable() {
-            @Override
-            public void run() {
-                System.err.println("Starting callback");
-                playAll(files.subList(1, files.size()), n+1);
-                System.err.println("Done with callback");
-            }
-        });
-        System.err.println("Queued " + files.size());
+        nowPlaying.clear();
+        nowPlaying.addAll(files);
+        currentPlaying = nowPlaying.get(0);
+        play();
     }
 
-    public void playAll(List<File> playList) {
-        playAll(playList, 1);
-    }
 }
