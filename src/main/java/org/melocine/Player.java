@@ -85,23 +85,26 @@ public class Player {
     }
 
     public void next() {
-        System.err.println("Disposing");
         currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
-        mediaPlayer.dispose();
+        disposeMediaPlayer();
         System.out.print("\r" + StringUtils.repeat(" ", 125));
         play();
     }
 
     public void previous() {
-        System.err.println("Disposing");
         if (mediaPlayer.currentTimeProperty().getValue().toSeconds() > 5){
             mediaPlayer.seek(new Duration(0));
             return;
         }
         currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) - 1);
-        mediaPlayer.dispose();
+        disposeMediaPlayer();
         System.out.print("\r" + StringUtils.repeat(" ", 125));
         play();
+    }
+
+    private void disposeMediaPlayer() {
+        System.err.println("Disposing");
+        mediaPlayer.dispose();
     }
 
     public void togglePlayPause() {
