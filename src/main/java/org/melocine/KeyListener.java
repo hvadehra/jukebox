@@ -23,6 +23,9 @@ public class KeyListener{
                             case 3:
                                 System.exit(1);
                                 break;
+                            case 32:
+                                player.togglePlayPause();
+                                break;
                             case 110:
                                 player.next();
                                 break;

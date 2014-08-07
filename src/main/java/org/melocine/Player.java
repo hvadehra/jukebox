@@ -92,4 +92,10 @@ public class Player {
         play();
     }
 
+    public void togglePlayPause() {
+        if (mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED)
+            mediaPlayer.play();
+        else
+            mediaPlayer.pause();
+    }
 }
