@@ -98,6 +98,7 @@ public class Player {
             mediaPlayer.seek(new Duration(0));
             return;
         }
+        currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) - 1);
         mediaPlayer.dispose();
         System.out.print("\r" + StringUtils.repeat(" ", 125));
         play();
