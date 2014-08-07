@@ -26,6 +26,9 @@ public class KeyListener{
                             case 32:
                                 player.togglePlayPause();
                                 break;
+                            case 98:
+                                player.previous();
+                                break;
                             case 110:
                                 player.next();
                                 break;

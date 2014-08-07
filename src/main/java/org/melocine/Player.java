@@ -72,14 +72,6 @@ public class Player {
         mediaPlayer.play();
     }
 
-    public void next() {
-        System.err.println("Disposing");
-        mediaPlayer.dispose();
-        System.out.print("\r" + StringUtils.repeat(" ", 125));
-        currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
-        play();
-    }
-
     private String formatTime(Duration duration) {
         return formatDuration(Long.valueOf(String.valueOf(Double.valueOf(duration.toMillis()).intValue())), "mm:ss");
     }
@@ -92,10 +84,30 @@ public class Player {
         play();
     }
 
+    public void next() {
+        System.err.println("Disposing");
+        currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
+        mediaPlayer.dispose();
+        System.out.print("\r" + StringUtils.repeat(" ", 125));
+        play();
+    }
+
+    public void previous() {
+        System.err.println("Disposing");
+        if (mediaPlayer.currentTimeProperty().getValue().toSeconds() > 5){
+            mediaPlayer.seek(new Duration(0));
+            return;
+        }
+        mediaPlayer.dispose();
+        System.out.print("\r" + StringUtils.repeat(" ", 125));
+        play();
+    }
+
     public void togglePlayPause() {
         if (mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED)
             mediaPlayer.play();
         else
             mediaPlayer.pause();
     }
+
 }
