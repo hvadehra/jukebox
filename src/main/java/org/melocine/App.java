@@ -6,6 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.melocine.events.EventDispatcher;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -31,11 +32,13 @@ public class App extends Application {
         );
         System.err.println("Found " + files.size() + " tracks.");
         Properties properties = new PropertiesService().properties();
-        LastFM lastFM = new LastFM("7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
-        final Player player = new Player(lastFM);
+
+        EventDispatcher eventDispatcher = new EventDispatcher();
+        new LastFM(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
+        final Player player = new Player(eventDispatcher);
         List<File> playList = buildPlayList(files);
         player.playAll(playList);
-        new KeyListener(player);
+        new KeyListener(eventDispatcher);
 
     }
 

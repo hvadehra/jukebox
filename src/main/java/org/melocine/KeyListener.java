@@ -1,5 +1,10 @@
 package org.melocine;
 
+import org.melocine.events.EventDispatcher;
+import org.melocine.events.NextTrackEvent;
+import org.melocine.events.PreviousTrackEvent;
+import org.melocine.events.TogglePlayPauseEvent;
+
 import java.io.IOException;
 
 /**
@@ -12,7 +17,10 @@ import java.io.IOException;
 
 public class KeyListener{
 
-    public KeyListener(final Player player){
+    private final EventDispatcher eventDispatcher;
+
+    public KeyListener(final EventDispatcher eventDispatcher){
+        this.eventDispatcher = eventDispatcher;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -24,13 +32,13 @@ public class KeyListener{
                                 System.exit(1);
                                 break;
                             case 32:
-                                player.togglePlayPause();
+                                eventDispatcher.dispatch(new TogglePlayPauseEvent());
                                 break;
                             case 98:
-                                player.previous();
+                                eventDispatcher.dispatch(new PreviousTrackEvent());
                                 break;
                             case 110:
-                                player.next();
+                                eventDispatcher.dispatch(new NextTrackEvent());
                                 break;
                         }
                     } catch (IOException e) {

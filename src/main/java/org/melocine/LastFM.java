@@ -6,6 +6,10 @@ import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleData;
 import de.umass.lastfm.scrobble.ScrobbleResult;
+import org.melocine.events.EventDispatcher;
+import org.melocine.events.EventRunnable;
+import org.melocine.events.NowPlayingEvent;
+import org.melocine.events.ScrobbleTrackEvent;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,14 +28,32 @@ public class LastFM {
     private final String key;
     private final String secret;
     private final ExecutorService threadPool;
+    private final EventDispatcher eventDispatcher;
 
-    public LastFM(String secret, String key, String password, String user) {
+    public LastFM(EventDispatcher eventDispatcher, String secret, String key, String password, String user) {
+        this.eventDispatcher = eventDispatcher;
         Caller.getInstance().setUserAgent("melocine-jukebox");
         this.secret = secret;
         this.key = key;
         this.password = password;
         this.user = user;
         this.threadPool = Executors.newSingleThreadExecutor();
+        registerEvents();
+    }
+
+    private void registerEvents() {
+        eventDispatcher.register(NowPlayingEvent.class, new EventRunnable<NowPlayingEvent>() {
+            @Override
+            public void run(NowPlayingEvent event) {
+                setNowPlaying(event.getMetaData());
+            }
+        });
+        eventDispatcher.register(ScrobbleTrackEvent.class, new EventRunnable<ScrobbleTrackEvent>() {
+            @Override
+            public void run(ScrobbleTrackEvent event) {
+                scrobble(event.getMetaData());
+            }
+        });
     }
 
     public void setNowPlaying(final MetaData metaData) {

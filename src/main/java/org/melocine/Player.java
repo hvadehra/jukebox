@@ -6,6 +6,7 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
+import org.melocine.events.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
+import static org.melocine.events.EventDispatcher.Event;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,11 +29,34 @@ public class Player {
     private final List<File> nowPlaying;
     private File currentPlaying;
     private MediaPlayer mediaPlayer;
-    private final LastFM lastFM;
+    private final EventDispatcher eventDispatcher;
 
-    public Player(LastFM lastFM) {
-        this.lastFM = lastFM;
+    public Player(EventDispatcher eventDispatcher) {
+        this.eventDispatcher = eventDispatcher;
         this.nowPlaying = new ArrayList<File>();
+        registerForTrackEvents();
+    }
+
+    private void registerForTrackEvents() {
+        eventDispatcher.register(NextTrackEvent.class, new EventRunnable() {
+            @Override
+            public void run(Event event) {
+                next();
+            }
+        });
+        eventDispatcher.register(TogglePlayPauseEvent.class, new EventRunnable() {
+            @Override
+            public void run(Event event) {
+                togglePlayPause();
+            }
+        });
+        eventDispatcher.register(PreviousTrackEvent.class, new EventRunnable() {
+            @Override
+            public void run(Event event) {
+                previous();
+            }
+        });
+
     }
 
     private void play(){
@@ -50,7 +75,7 @@ public class Player {
                 Duration duration = mediaPlayer.getMedia().getDuration();
                 MetaData metaData = new MetaData(mediaPlayer.getMedia().getMetadata(), duration.toSeconds());
                 System.out.println("\r" + (1 + nowPlaying.indexOf(currentPlaying)) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(duration) + "]");
-                lastFM.setNowPlaying(metaData);
+                eventDispatcher.dispatch(new NowPlayingEvent(metaData));
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
@@ -64,7 +89,7 @@ public class Player {
                     String remaining = StringUtils.repeat("-", (int)(((duration- newValueSeconds)/duration) * PROGRESS_WIDTH));
                     System.out.print("\r[" + done + "[" + formatTime(newValue) + "]" + remaining + "]");
                     if (newValueSeconds.intValue() == duration.intValue()/2) {
-                        lastFM.scrobble(new MetaData(mediaPlayer.getMedia().getMetadata(), duration));
+                        eventDispatcher.dispatch(new ScrobbleTrackEvent(new MetaData(mediaPlayer.getMedia().getMetadata(), duration)));
                     }
                 }
             }
@@ -92,7 +117,7 @@ public class Player {
     }
 
     public void previous() {
-        if (mediaPlayer.currentTimeProperty().getValue().toSeconds() > 5){
+        if (mediaPlayer.currentTimeProperty().getValue().toSeconds() > 10){
             mediaPlayer.seek(new Duration(0));
             return;
         }
