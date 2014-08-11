@@ -7,7 +7,6 @@ import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleData;
 import de.umass.lastfm.scrobble.ScrobbleResult;
 import org.melocine.events.EventDispatcher;
-import org.melocine.events.EventRunnable;
 import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.ScrobbleTrackEvent;
 
@@ -42,15 +41,15 @@ public class LastFM {
     }
 
     private void registerEvents() {
-        eventDispatcher.register(NowPlayingEvent.class, new EventRunnable<NowPlayingEvent>() {
+        eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
-            public void run(NowPlayingEvent event) {
+            public void receive(NowPlayingEvent event) {
                 setNowPlaying(event.getMetaData());
             }
         });
-        eventDispatcher.register(ScrobbleTrackEvent.class, new EventRunnable<ScrobbleTrackEvent>() {
+        eventDispatcher.register(ScrobbleTrackEvent.class, new EventDispatcher.Receiver<ScrobbleTrackEvent>() {
             @Override
-            public void run(ScrobbleTrackEvent event) {
+            public void receive(ScrobbleTrackEvent event) {
                 scrobble(event.getMetaData());
             }
         });

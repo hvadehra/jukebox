@@ -1,8 +1,11 @@
 package org.melocine.events;
 
-import java.util.ArrayList;
+import com.google.common.base.Function;
+import com.google.common.collect.MapMaker;
+
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,24 +16,36 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EventDispatcher {
 
-    private Map<String, ArrayList<EventRunnable>> listeners = new ConcurrentHashMap<String, ArrayList<EventRunnable>>();
+    private final Map<Class<? extends Event>, Queue<Receiver<? extends Event>>> map;
 
-    public <T extends Event> void register(Class<T> event, EventRunnable eventRunnable){
-        String key = event.getCanonicalName();
-        if (!listeners.containsKey(key)) {
-            listeners.put(key, new ArrayList<EventRunnable>());
-        }
-        listeners.get(key).add(eventRunnable);
+    public EventDispatcher() {
+        this.map = new MapMaker().makeComputingMap(new Function<Class<? extends Event>, Queue<Receiver<? extends Event>>>() {
+            @Override
+            public Queue<Receiver<? extends Event>> apply(Class<? extends Event> from) {
+                return new ConcurrentLinkedQueue<Receiver<? extends Event>>();
+            }
+        });
     }
 
-    public <T extends Event> void dispatch(T event){
-        String key = event.getClass().getCanonicalName();
-        for (EventRunnable<T> eventRunnable : listeners.get(key)) {
-            eventRunnable.run(event);
+
+    public interface Event {
+    }
+
+    public <T extends Event> void dispatch(T event) {
+        for (Receiver receiver : map.get(event.getClass())) {
+            try {
+                receiver.receive(event);
+            } catch (Exception e) {
+                System.err.println("Error During event dispatch: " + e);
+            }
         }
     }
 
-    public interface Event{
+    public <T extends Event> void register(Class<T> eventClass, Receiver<T> receiver) {
+        map.get(eventClass).add(receiver);
+    }
 
+    public interface Receiver<T extends Event> {
+        public void receive(T event);
     }
 }

@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
-import static org.melocine.events.EventDispatcher.Event;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,21 +37,21 @@ public class Player {
     }
 
     private void registerForTrackEvents() {
-        eventDispatcher.register(NextTrackEvent.class, new EventRunnable() {
+        eventDispatcher.register(NextTrackEvent.class, new EventDispatcher.Receiver<NextTrackEvent>() {
             @Override
-            public void run(Event event) {
+            public void receive(NextTrackEvent event) {
                 next();
             }
         });
-        eventDispatcher.register(TogglePlayPauseEvent.class, new EventRunnable() {
+        eventDispatcher.register(TogglePlayPauseEvent.class, new EventDispatcher.Receiver<TogglePlayPauseEvent>() {
             @Override
-            public void run(Event event) {
+            public void receive(TogglePlayPauseEvent event) {
                 togglePlayPause();
             }
         });
-        eventDispatcher.register(PreviousTrackEvent.class, new EventRunnable() {
+        eventDispatcher.register(PreviousTrackEvent.class, new EventDispatcher.Receiver<PreviousTrackEvent>() {
             @Override
-            public void run(Event event) {
+            public void receive(PreviousTrackEvent event) {
                 previous();
             }
         });
