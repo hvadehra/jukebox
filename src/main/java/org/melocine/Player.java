@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
-
 /**
  * Created by IntelliJ IDEA.
  * User: hemanshu.v
@@ -24,7 +22,6 @@ import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
  */
 public class Player {
 
-    private static final int PROGRESS_WIDTH = 100;
     private final List<File> nowPlaying;
     private File currentPlaying;
     private MediaPlayer mediaPlayer;
@@ -56,6 +53,12 @@ public class Player {
             }
         });
 
+        eventDispatcher.register(PlayAllEvent.class, new EventDispatcher.Receiver<PlayAllEvent>() {
+            @Override
+            public void receive(PlayAllEvent event) {
+                playAll(event.files);
+            }
+        });
     }
 
     private void play(){
@@ -73,8 +76,7 @@ public class Player {
             public void run() {
                 Duration duration = mediaPlayer.getMedia().getDuration();
                 MetaData metaData = new MetaData(mediaPlayer.getMedia().getMetadata(), duration.toSeconds());
-                System.out.println("\r" + (1 + nowPlaying.indexOf(currentPlaying)) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(duration) + "]");
-                eventDispatcher.dispatch(new NowPlayingEvent(metaData));
+                eventDispatcher.dispatch(new NowPlayingEvent(nowPlaying.indexOf(currentPlaying), metaData, duration));
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
@@ -84,9 +86,7 @@ public class Player {
                 Double newValueSeconds = newValue.toSeconds();
                 if (newValueSeconds.intValue() != oldValueSeconds.intValue()){
                     Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
-                    String done = StringUtils.repeat("=", (int) ((newValueSeconds / duration) * PROGRESS_WIDTH));
-                    String remaining = StringUtils.repeat("-", (int)(((duration- newValueSeconds)/duration) * PROGRESS_WIDTH));
-                    System.out.print("\r[" + done + "[" + formatTime(newValue) + "]" + remaining + "]");
+                    eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValue));
                     if (newValueSeconds.intValue() == duration.intValue()/2) {
                         eventDispatcher.dispatch(new ScrobbleTrackEvent(new MetaData(mediaPlayer.getMedia().getMetadata(), duration)));
                     }
@@ -96,12 +96,7 @@ public class Player {
         mediaPlayer.play();
     }
 
-    private String formatTime(Duration duration) {
-        return formatDuration(Long.valueOf(String.valueOf(Double.valueOf(duration.toMillis()).intValue())), "mm:ss");
-    }
-
     public void playAll(final Collection<File> files) {
-        System.err.println("Playing " + files.size());
         nowPlaying.clear();
         nowPlaying.addAll(files);
         currentPlaying = nowPlaying.get(0);

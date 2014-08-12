@@ -1,5 +1,6 @@
 package org.melocine.events;
 
+import javafx.util.Duration;
 import org.melocine.MetaData;
 
 /**
@@ -10,13 +11,14 @@ import org.melocine.MetaData;
  * To change this template use File | Settings | File Templates.
  */
 public class NowPlayingEvent implements EventDispatcher.Event {
-    private final MetaData metaData;
+    public final int index;
+    public final MetaData metaData;
+    public final Duration duration;
 
-    public NowPlayingEvent(MetaData metaData) {
+    public NowPlayingEvent(int index, MetaData metaData, Duration duration) {
+        this.index = index;
         this.metaData = metaData;
+        this.duration = duration;
     }
 
-    public MetaData getMetaData() {
-        return metaData;
-    }
 }

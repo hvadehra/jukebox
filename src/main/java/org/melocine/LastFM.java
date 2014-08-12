@@ -44,7 +44,7 @@ public class LastFM {
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
-                setNowPlaying(event.getMetaData());
+                setNowPlaying(event.metaData);
             }
         });
         eventDispatcher.register(ScrobbleTrackEvent.class, new EventDispatcher.Receiver<ScrobbleTrackEvent>() {
