@@ -97,6 +97,7 @@ public class Player {
     }
 
     public void playAll(final Collection<File> files) {
+        System.err.println("Playing " + files.size());
         nowPlaying.clear();
         nowPlaying.addAll(files);
         currentPlaying = nowPlaying.get(0);
@@ -106,7 +107,6 @@ public class Player {
     public void next() {
         currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
         disposeMediaPlayer();
-        System.out.print("\r" + StringUtils.repeat(" ", 125));
         play();
     }
 

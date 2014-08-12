@@ -3,8 +3,8 @@ package org.melocine;
 import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.melocine.events.EventDispatcher;
+import org.melocine.events.NextTrackEvent;
 import org.melocine.events.NowPlayingEvent;
-import org.melocine.events.PlayAllEvent;
 import org.melocine.events.PlayTimeChangedEvent;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
@@ -27,13 +27,6 @@ public class Display {
     }
 
     private void registerForEvents() {
-        eventDispatcher.register(PlayAllEvent.class, new EventDispatcher.Receiver<PlayAllEvent>() {
-            @Override
-            public void receive(PlayAllEvent event) {
-                System.err.println("Playing " + event.files.size());
-            }
-        });
-
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
@@ -48,6 +41,13 @@ public class Display {
                 String done = StringUtils.repeat("=", (int) ((event.newValue.toSeconds() / event.duration) * PROGRESS_WIDTH));
                 String remaining = StringUtils.repeat("-", (int)(((event.duration- event.newValue.toSeconds())/event.duration) * PROGRESS_WIDTH));
                 System.out.print("\r[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
+            }
+        });
+
+        eventDispatcher.register(NextTrackEvent.class, new EventDispatcher.Receiver<NextTrackEvent>() {
+            @Override
+            public void receive(NextTrackEvent event) {
+                System.out.print("\r" + StringUtils.repeat(" ", 125));
             }
         });
     }
