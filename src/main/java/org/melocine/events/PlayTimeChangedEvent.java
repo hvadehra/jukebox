@@ -1,7 +1,5 @@
 package org.melocine.events;
 
-import javafx.util.Duration;
-
 /**
  * Created by IntelliJ IDEA.
  * User: hemanshu.v
@@ -11,9 +9,9 @@ import javafx.util.Duration;
  */
 public class PlayTimeChangedEvent implements EventDispatcher.Event {
     public final Double duration;
-    public final Duration newValue;
+    public final Double newValue;
 
-    public PlayTimeChangedEvent(Double duration, Duration newValue) {
+    public PlayTimeChangedEvent(Double duration, Double newValue) {
         this.duration = duration;
         this.newValue = newValue;
     }

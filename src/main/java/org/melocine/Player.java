@@ -86,7 +86,7 @@ public class Player {
                 Double newValueSeconds = newValue.toSeconds();
                 if (newValueSeconds.intValue() != oldValueSeconds.intValue()){
                     Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
-                    eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValue));
+                    eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValueSeconds));
                     if (newValueSeconds.intValue() == duration.intValue()/2) {
                         eventDispatcher.dispatch(new ScrobbleTrackEvent(new MetaData(mediaPlayer.getMedia().getMetadata(), duration)));
                     }
