@@ -1,5 +1,6 @@
 package org.melocine;
 
+import com.google.common.base.Joiner;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.commons.io.FileUtils;
@@ -59,8 +60,8 @@ public class App extends Application {
         if (args.length == 0){
             dir = new File(".");
         }
-        else{
-            dir = new File(args[0]);
+        else {
+            dir = new File(Joiner.on(" ").join(args));
         }
         System.err.println("Starting in: " + dir.getAbsolutePath());
         launch(args);

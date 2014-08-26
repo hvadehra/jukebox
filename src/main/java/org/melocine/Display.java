@@ -26,17 +26,19 @@ import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
 public class Display {
 
     private static final int PROGRESS_WIDTH = 100;
+    private static final int TERMINAL_WIDTH = 150;
+    private static final int TERMINAL_HEIGHT = 50;
 
     private final EventDispatcher eventDispatcher;
     private final Screen screen;
     private final ScreenWriter screenWriter;
-    private int playListPos = 5;
-    private int playListDisplaySize = 40;
+    private final int playListPos = 5;
+    private final int playListDisplaySize = 40;
 
     public Display(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
         Terminal terminal = TerminalFacade.createTerminal();
-        this.screen = new Screen(terminal, new TerminalSize(150, 50));
+        this.screen = new Screen(terminal, new TerminalSize(TERMINAL_WIDTH, TERMINAL_HEIGHT));
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -51,9 +53,6 @@ public class Display {
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
-//                MetaData metaData = event.metaData;
-//                screenWriter.drawString(1, 3 + (++playListPos)%45, (1 + event.index) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(event.duration.toSeconds()) + "]");
-//                screenWriter.drawString(1, 4 + (playListPos)%45, StringUtils.repeat(" ", PROGRESS_WIDTH));
                 drawPlaylist(event.playlist, event.index);
                 screen.refresh();
             }
@@ -95,7 +94,7 @@ public class Display {
             else{
                 setDefaultStyle();
             }
-            screenWriter.drawString(1, displayPos, StringUtils.repeat(" ", 150));
+            screenWriter.drawString(1, displayPos, StringUtils.repeat(" ", TERMINAL_WIDTH));
             screenWriter.drawString(1, displayPos, entryDisplay);
         }
     }
