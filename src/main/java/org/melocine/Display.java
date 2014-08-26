@@ -6,10 +6,7 @@ import com.googlecode.lanterna.screen.ScreenWriter;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalSize;
 import org.apache.commons.lang3.StringUtils;
-import org.melocine.events.EventDispatcher;
-import org.melocine.events.NowPlayingEvent;
-import org.melocine.events.PlayTimeChangedEvent;
-import org.melocine.events.ShutdownEvent;
+import org.melocine.events.*;
 
 import java.io.File;
 import java.util.List;
@@ -34,6 +31,9 @@ public class Display {
     private final ScreenWriter screenWriter;
     private final int playListPos = 5;
     private final int playListDisplaySize = 40;
+    private int currentSelectedIndex = 0;
+    private List<File> playlist;
+    private int currentPlayingIndex;
 
     public Display(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
@@ -53,8 +53,9 @@ public class Display {
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
-                drawPlaylist(event.playlist, event.index);
-                screen.refresh();
+                playlist = event.playlist;
+                currentPlayingIndex = event.index;
+                updateScreen();
             }
         });
 
@@ -71,32 +72,69 @@ public class Display {
             public void receive(PlayTimeChangedEvent event) {
                 String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH));
                 String remaining = StringUtils.repeat("-", (int) (((event.duration - event.newValue) / event.duration) * PROGRESS_WIDTH));
+                setDefaultStyle();
                 screenWriter.drawString(1, 1, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
                 screen.refresh();
             }
         });
+        
+        eventDispatcher.register(CursorUpEvent.class, new EventDispatcher.Receiver<CursorUpEvent>() {
+            @Override
+            public void receive(CursorUpEvent event) {
+                currentSelectedIndex = (currentSelectedIndex > 0) ? (currentSelectedIndex - 1) : currentSelectedIndex;
+                updateScreen();
+            }
+        });
+
+        eventDispatcher.register(CursorDownEvent.class, new EventDispatcher.Receiver<CursorDownEvent>() {
+            @Override
+            public void receive(CursorDownEvent event) {
+                currentSelectedIndex = (currentSelectedIndex < playlist.size()-1) ? (currentSelectedIndex + 1) : currentSelectedIndex;
+                updateScreen();
+            }
+        });
+
+        eventDispatcher.register(ReturnKeyPressEvent.class, new EventDispatcher.Receiver<ReturnKeyPressEvent>() {
+            @Override
+            public void receive(ReturnKeyPressEvent event) {
+                eventDispatcher.dispatch(new PlaySelectedTrackEvent(currentSelectedIndex));
+            }
+        });
+    }
+
+    private void updateScreen() {
+        drawPlaylist();
+        screen.refresh();
     }
 
     private String formatTime(Double durationSeconds) {
         return formatDuration(1000*Long.valueOf(String.valueOf(durationSeconds.intValue())), "mm:ss");
     }
 
-    private void drawPlaylist(List<File> playlist, int index){
-        int beginIndex = (index > playListDisplaySize/2) ? (index - playListDisplaySize/2) : 0;
+    private void drawPlaylist(){
+        int beginIndex = (currentPlayingIndex > playListDisplaySize/2) ? (currentPlayingIndex - playListDisplaySize/2) : 0;
         int endIndex = (playlist.size() > beginIndex + playListDisplaySize) ? (beginIndex + playListDisplaySize) : playlist.size();
+        beginIndex = (currentSelectedIndex > (endIndex-1)) ? (currentSelectedIndex - playListDisplaySize + 1) : beginIndex;
+        endIndex = (playlist.size() > beginIndex + playListDisplaySize) ? (beginIndex + playListDisplaySize) : playlist.size();
         for (int i = beginIndex; i < endIndex; i++) {
             int displayPos = playListPos + i - beginIndex;
             File entry = playlist.get(i);
             String entryDisplay = (i+1) + ". " + entry.getAbsolutePath();
-            if (playlist.indexOf(entry) == index){
-                setCurrentPlayingStyle();
+            setDefaultStyle();
+            if (currentSelectedIndex == i){
+                setCurrentSelectedStyle();
             }
-            else{
-                setDefaultStyle();
+            if (i == currentPlayingIndex){
+                setCurrentPlayingStyle();
             }
             screenWriter.drawString(1, displayPos, StringUtils.repeat(" ", TERMINAL_WIDTH));
             screenWriter.drawString(1, displayPos, entryDisplay);
         }
+    }
+
+    private void setCurrentSelectedStyle() {
+        screenWriter.setBackgroundColor(Terminal.Color.WHITE);
+        screenWriter.setForegroundColor(Terminal.Color.BLACK);
     }
 
     private void setDefaultStyle() {
@@ -106,6 +144,5 @@ public class Display {
 
     private void setCurrentPlayingStyle() {
         screenWriter.setForegroundColor(Terminal.Color.RED);
-        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
     }
 }

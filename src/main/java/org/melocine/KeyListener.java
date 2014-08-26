@@ -24,9 +24,13 @@ public class KeyListener{
                 while (true) {
                     try {
                         int tmp = System.in.read();
+                        System.err.println("Key pressed: " + tmp);
                         switch (tmp){
                             case 3:
                                 eventDispatcher.dispatch(new ShutdownEvent());
+                                break;
+                            case 10:
+                                eventDispatcher.dispatch(new ReturnKeyPressEvent());
                                 break;
                             case 32:
                                 eventDispatcher.dispatch(new TogglePlayPauseEvent());
@@ -36,6 +40,12 @@ public class KeyListener{
                                 break;
                             case 110:
                                 eventDispatcher.dispatch(new NextTrackEvent());
+                                break;
+                            case 97:
+                                eventDispatcher.dispatch(new CursorUpEvent());
+                                break;
+                            case 122:
+                                eventDispatcher.dispatch(new CursorDownEvent());
                                 break;
                         }
                     } catch (IOException e) {

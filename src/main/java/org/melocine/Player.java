@@ -59,6 +59,19 @@ public class Player {
                 playAll(event.files);
             }
         });
+
+        eventDispatcher.register(PlaySelectedTrackEvent.class, new EventDispatcher.Receiver<PlaySelectedTrackEvent>() {
+            @Override
+            public void receive(PlaySelectedTrackEvent event) {
+                playSelectedTrack(event.currentSelectedIndex);
+            }
+        });
+    }
+
+    private void playSelectedTrack(int currentSelectedIndex) {
+        currentPlaying = nowPlaying.get(currentSelectedIndex);
+        disposeMediaPlayer();
+        play();
     }
 
     private void play(){
