@@ -11,6 +11,9 @@ import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.PlayTimeChangedEvent;
 import org.melocine.events.ShutdownEvent;
 
+import java.io.File;
+import java.util.List;
+
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
 
 /**
@@ -27,7 +30,8 @@ public class Display {
     private final EventDispatcher eventDispatcher;
     private final Screen screen;
     private final ScreenWriter screenWriter;
-    private int playListPos = 0;
+    private int playListPos = 5;
+    private int playListDisplaySize = 40;
 
     public Display(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
@@ -47,9 +51,10 @@ public class Display {
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
-                MetaData metaData = event.metaData;
-                screenWriter.drawString(1, 3 + (++playListPos)%45, (1 + event.index) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(event.duration.toSeconds()) + "]");
-                screenWriter.drawString(1, 4 + (playListPos)%45, StringUtils.repeat(" ", PROGRESS_WIDTH));
+//                MetaData metaData = event.metaData;
+//                screenWriter.drawString(1, 3 + (++playListPos)%45, (1 + event.index) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(event.duration.toSeconds()) + "]");
+//                screenWriter.drawString(1, 4 + (playListPos)%45, StringUtils.repeat(" ", PROGRESS_WIDTH));
+                drawPlaylist(event.playlist, event.index);
                 screen.refresh();
             }
         });
@@ -77,5 +82,31 @@ public class Display {
         return formatDuration(1000*Long.valueOf(String.valueOf(durationSeconds.intValue())), "mm:ss");
     }
 
+    private void drawPlaylist(List<File> playlist, int index){
+        int beginIndex = (index > playListDisplaySize/2) ? (index - playListDisplaySize/2) : 0;
+        int endIndex = (playlist.size() > beginIndex + playListDisplaySize) ? (beginIndex + playListDisplaySize) : playlist.size();
+        for (int i = beginIndex; i < endIndex; i++) {
+            int displayPos = playListPos + i - beginIndex;
+            File entry = playlist.get(i);
+            String entryDisplay = (i+1) + ". " + entry.getAbsolutePath();
+            if (playlist.indexOf(entry) == index){
+                setCurrentPlayingStyle();
+            }
+            else{
+                setDefaultStyle();
+            }
+            screenWriter.drawString(1, displayPos, StringUtils.repeat(" ", 150));
+            screenWriter.drawString(1, displayPos, entryDisplay);
+        }
+    }
 
+    private void setDefaultStyle() {
+        screenWriter.setForegroundColor(Terminal.Color.WHITE);
+        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+    }
+
+    private void setCurrentPlayingStyle() {
+        screenWriter.setForegroundColor(Terminal.Color.RED);
+        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+    }
 }

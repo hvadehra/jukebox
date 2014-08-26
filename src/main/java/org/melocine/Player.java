@@ -77,7 +77,7 @@ public class Player {
                 Duration duration = mediaPlayer.getMedia().getDuration();
                 MetaData metaData = new MetaData(mediaPlayer.getMedia().getMetadata(), duration.toSeconds());
                 System.err.println("test2");
-                eventDispatcher.dispatch(new NowPlayingEvent(nowPlaying.indexOf(currentPlaying), metaData, duration));
+                eventDispatcher.dispatch(new NowPlayingEvent(nowPlaying.indexOf(currentPlaying), metaData, duration, nowPlaying));
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {
