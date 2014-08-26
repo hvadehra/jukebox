@@ -1,9 +1,6 @@
 package org.melocine;
 
-import org.melocine.events.EventDispatcher;
-import org.melocine.events.NextTrackEvent;
-import org.melocine.events.PreviousTrackEvent;
-import org.melocine.events.TogglePlayPauseEvent;
+import org.melocine.events.*;
 
 import java.io.IOException;
 
@@ -29,7 +26,7 @@ public class KeyListener{
                         int tmp = System.in.read();
                         switch (tmp){
                             case 3:
-                                System.exit(1);
+                                eventDispatcher.dispatch(new ShutdownEvent());
                                 break;
                             case 32:
                                 eventDispatcher.dispatch(new TogglePlayPauseEvent());

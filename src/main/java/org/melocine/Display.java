@@ -1,13 +1,17 @@
 package org.melocine;
 
+import com.googlecode.lanterna.TerminalFacade;
+import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.screen.ScreenWriter;
+import com.googlecode.lanterna.terminal.Terminal;
+import com.googlecode.lanterna.terminal.TerminalSize;
 import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.AnsiConsole;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.PlayTimeChangedEvent;
+import org.melocine.events.ShutdownEvent;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
-import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,12 +25,21 @@ public class Display {
     private static final int PROGRESS_WIDTH = 100;
 
     private final EventDispatcher eventDispatcher;
-    private int playListPos = 3;
+    private final Screen screen;
+    private final ScreenWriter screenWriter;
+    private int playListPos = 0;
 
     public Display(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
-        AnsiConsole.systemInstall();
-        System.out.print(ansi().eraseScreen().cursor(playListPos, 1));
+        Terminal terminal = TerminalFacade.createTerminal();
+        this.screen = new Screen(terminal, new TerminalSize(150, 50));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                screen.startScreen();
+            }
+        }).start();
+        this.screenWriter = new ScreenWriter(screen);
         registerForEvents();
     }
 
@@ -35,10 +48,17 @@ public class Display {
             @Override
             public void receive(NowPlayingEvent event) {
                 MetaData metaData = event.metaData;
-                System.out.println(ansi().cursor(2, 1).eraseLine());
-                System.out.print(ansi().cursor(++playListPos, 1));
-                System.out.print(ansi().eraseLine());
-                System.out.println((1 + event.index) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(event.duration.toSeconds()) + "]");
+                screenWriter.drawString(1, 3 + (++playListPos)%45, (1 + event.index) + ". " + metaData.artist + " - " + metaData.title + "  [" + metaData.album + "] [" + formatTime(event.duration.toSeconds()) + "]");
+                screenWriter.drawString(1, 4 + (playListPos)%45, StringUtils.repeat(" ", PROGRESS_WIDTH));
+                screen.refresh();
+            }
+        });
+
+        eventDispatcher.register(ShutdownEvent.class, new EventDispatcher.Receiver<ShutdownEvent>() {
+            @Override
+            public void receive(ShutdownEvent event) {
+                screen.stopScreen();
+                System.exit(1);
             }
         });
 
@@ -47,11 +67,8 @@ public class Display {
             public void receive(PlayTimeChangedEvent event) {
                 String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH));
                 String remaining = StringUtils.repeat("-", (int) (((event.duration - event.newValue) / event.duration) * PROGRESS_WIDTH));
-                System.out.print(ansi().cursor(1, 1));
-                System.out.print("[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
-                System.out.print(ansi().eraseLine());
-                System.out.print(ansi().cursor(2, 1));
-                System.out.print(ansi().eraseLine());
+                screenWriter.drawString(1, 1, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
+                screen.refresh();
             }
         });
     }
