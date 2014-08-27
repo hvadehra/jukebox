@@ -25,8 +25,10 @@ public class Display {
     private static final int PROGRESS_WIDTH = 100;
     private static final int TERMINAL_WIDTH = 150;
     private static final int TERMINAL_HEIGHT = 50;
-    private static final int PLAYLIST_POS = 5;
+    private static final int PLAYLIST_YPOS = 5;
     private static final int PLAYLIST_DISPLAY_SIZE = 40;
+    private static final int PROGRESS_BAR_YPOS = 1;
+    private static final int NOW_PLAYING_YPOS = 2;
 
     private final EventDispatcher eventDispatcher;
     private final Screen screen;
@@ -79,7 +81,7 @@ public class Display {
                 String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH));
                 String remaining = StringUtils.repeat("-", (int) (((event.duration - event.newValue) / event.duration) * PROGRESS_WIDTH));
                 setDefaultStyle();
-                screenWriter.drawString(1, 1, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
+                screenWriter.drawString(1, PROGRESS_BAR_YPOS, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
                 screen.refresh();
             }
         });
@@ -113,20 +115,32 @@ public class Display {
     }
 
     private void updateScreen() {
+        drawNowPlaying();
         drawPlaylist();
         screen.refresh();
     }
 
+    private void drawNowPlaying() {
+        MetaData metaData = MetaDataStore.get(playlist.get(currentPlayingIndex));
+        screenWriter.drawString(1, NOW_PLAYING_YPOS, metaData.title + " (" + formatTime(metaData.duration) + ")");
+        screenWriter.drawString(1, NOW_PLAYING_YPOS+1, metaData.artist + " [" + metaData.album + "]");
+    }
+
+    private String formatTime(Long durationSeconds) {
+        return formatDuration(1000 * durationSeconds, "mm:ss");
+    }
+
     private String formatTime(Double durationSeconds) {
-        return formatDuration(1000*Long.valueOf(String.valueOf(durationSeconds.intValue())), "mm:ss");
+        return formatTime(durationSeconds.longValue());
     }
 
     private void drawPlaylist(){
         displayEndIndex = (displayEndIndex < playlist.size()) ? displayEndIndex : playlist.size();
         for (int i = displayBeginIndex; i < displayEndIndex; i++) {
-            int displayPos = PLAYLIST_POS + i - displayBeginIndex;
+            int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
             File entry = playlist.get(i);
-            String entryDisplay = (i+1) + ". " + entry.getAbsolutePath();
+            MetaData metaData = MetaDataStore.get(entry);
+            String entryDisplay = (i+1) + ". " + metaData.artist + " - " + metaData.title + " [" + metaData.album + "]";
             setDefaultStyle();
             if (currentSelectedIndex == i){
                 setCurrentSelectedStyle();
