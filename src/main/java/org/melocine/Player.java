@@ -26,9 +26,11 @@ public class Player {
     private File currentPlaying;
     private MediaPlayer mediaPlayer;
     private final EventDispatcher eventDispatcher;
+    private final MetaDataStore metaDataStore;
 
-    public Player(EventDispatcher eventDispatcher) {
+    public Player(EventDispatcher eventDispatcher, MetaDataStore metaDataStore) {
         this.eventDispatcher = eventDispatcher;
+        this.metaDataStore = metaDataStore;
         this.nowPlaying = new ArrayList<File>();
         registerForTrackEvents();
     }
@@ -124,7 +126,7 @@ public class Player {
             @Override
             public void run() {
                 for (File file : files) {
-                    MetaDataStore.get(file);
+                    metaDataStore.get(file);
                     Thread.yield();
                 }
             }

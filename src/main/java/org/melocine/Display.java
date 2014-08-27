@@ -37,6 +37,7 @@ public class Display {
     private static int PLAYLIST_RATING_WIDTH = 10;
 
     private final EventDispatcher eventDispatcher;
+    private final MetaDataStore metaDataStore;
     private final Screen screen;
     private final ScreenWriter screenWriter;
     private int currentPlayingIndex;
@@ -45,8 +46,9 @@ public class Display {
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
 
-    public Display(EventDispatcher eventDispatcher, int width, int height) {
+    public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
+        this.metaDataStore = metaDataStore;
         Terminal terminal = TerminalFacade.createTerminal();
         terminal.addResizeListener(terminalResizeListener());
         screen = new Screen(terminal, width, height);
@@ -158,7 +160,7 @@ public class Display {
     }
 
     private void drawNowPlaying() {
-        MetaData metaData = MetaDataStore.get(playlist.get(currentPlayingIndex));
+        MetaData metaData = metaDataStore.get(playlist.get(currentPlayingIndex));
         drawNowPlayingTrackInfo(metaData);
         drawNowPlayingRating(metaData);
     }
@@ -201,7 +203,7 @@ public class Display {
         for (int i = displayBeginIndex; i < displayEndIndex; i++) {
             int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
             File entry = playlist.get(i);
-            MetaData metaData = MetaDataStore.get(entry);
+            MetaData metaData = metaDataStore.get(entry);
             String entryDisplay = createEntryDisplay(i, metaData);
             ScreenCharacterStyle[] charStyle = setDefaultEntryColors();
             if (currentSelectedIndex == i){

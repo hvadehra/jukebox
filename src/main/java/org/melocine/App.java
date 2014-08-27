@@ -38,10 +38,11 @@ public class App extends Application {
         Properties properties = new PropertiesService().properties();
 
         EventDispatcher eventDispatcher = new EventDispatcher();
+        MetaDataStore metaDataStore = new MetaDataStore(eventDispatcher);
         new LastFM(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
-        new Player(eventDispatcher);
+        new Player(eventDispatcher, metaDataStore);
         new KeyListener(eventDispatcher);
-        new Display(eventDispatcher, width, height);
+        new Display(eventDispatcher, metaDataStore, width, height);
 
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
