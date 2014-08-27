@@ -25,15 +25,17 @@ public class Display {
     private static final int PROGRESS_WIDTH = 100;
     private static final int TERMINAL_WIDTH = 150;
     private static final int TERMINAL_HEIGHT = 50;
+    private static final int PLAYLIST_POS = 5;
+    private static final int PLAYLIST_DISPLAY_SIZE = 40;
 
     private final EventDispatcher eventDispatcher;
     private final Screen screen;
     private final ScreenWriter screenWriter;
-    private final int playListPos = 5;
-    private final int playListDisplaySize = 40;
-    private int currentSelectedIndex = 0;
-    private List<File> playlist;
     private int currentPlayingIndex;
+    private List<File> playlist;
+    private int currentSelectedIndex = 0;
+    private int displayBeginIndex = 0;
+    private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
 
     public Display(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
@@ -55,6 +57,10 @@ public class Display {
             public void receive(NowPlayingEvent event) {
                 playlist = event.playlist;
                 currentPlayingIndex = event.index;
+                if (displayBeginIndex < currentPlayingIndex && currentPlayingIndex < displayEndIndex){
+                    displayBeginIndex = (displayEndIndex - currentPlayingIndex) < 5 && displayEndIndex < playlist.size() ? displayBeginIndex + 1 : displayBeginIndex;
+                    displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
+                }
                 updateScreen();
             }
         });
@@ -82,6 +88,8 @@ public class Display {
             @Override
             public void receive(CursorUpEvent event) {
                 currentSelectedIndex = (currentSelectedIndex > 0) ? (currentSelectedIndex - 1) : currentSelectedIndex;
+                displayBeginIndex = (currentSelectedIndex - displayBeginIndex) < 5 && displayBeginIndex > 0 ? displayBeginIndex - 1 : displayBeginIndex;
+                displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
                 updateScreen();
             }
         });
@@ -89,7 +97,9 @@ public class Display {
         eventDispatcher.register(CursorDownEvent.class, new EventDispatcher.Receiver<CursorDownEvent>() {
             @Override
             public void receive(CursorDownEvent event) {
-                currentSelectedIndex = (currentSelectedIndex < playlist.size()-1) ? (currentSelectedIndex + 1) : currentSelectedIndex;
+                currentSelectedIndex = (currentSelectedIndex < playlist.size()) ? (currentSelectedIndex + 1) : currentSelectedIndex;
+                displayBeginIndex = (displayEndIndex - currentSelectedIndex) < 5 && displayEndIndex < playlist.size() ? displayBeginIndex + 1 : displayBeginIndex;
+                displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
                 updateScreen();
             }
         });
@@ -112,12 +122,9 @@ public class Display {
     }
 
     private void drawPlaylist(){
-        int beginIndex = (currentPlayingIndex > playListDisplaySize/2) ? (currentPlayingIndex - playListDisplaySize/2) : 0;
-        int endIndex = (playlist.size() > beginIndex + playListDisplaySize) ? (beginIndex + playListDisplaySize) : playlist.size();
-        beginIndex = (currentSelectedIndex > (endIndex-1)) ? (currentSelectedIndex - playListDisplaySize + 1) : beginIndex;
-        endIndex = (playlist.size() > beginIndex + playListDisplaySize) ? (beginIndex + playListDisplaySize) : playlist.size();
-        for (int i = beginIndex; i < endIndex; i++) {
-            int displayPos = playListPos + i - beginIndex;
+        displayEndIndex = (displayEndIndex < playlist.size()) ? displayEndIndex : playlist.size();
+        for (int i = displayBeginIndex; i < displayEndIndex; i++) {
+            int displayPos = PLAYLIST_POS + i - displayBeginIndex;
             File entry = playlist.get(i);
             String entryDisplay = (i+1) + ". " + entry.getAbsolutePath();
             setDefaultStyle();
