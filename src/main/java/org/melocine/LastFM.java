@@ -36,7 +36,7 @@ public class LastFM {
         this.key = key;
         this.password = password;
         this.user = user;
-        this.threadPool = Executors.newSingleThreadExecutor();
+        this.threadPool = Executors.newFixedThreadPool(5);
         registerEvents();
     }
 
