@@ -7,8 +7,8 @@ import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class MetaDataStore {
 
-    private static final Map<File, MetaData> cache = new HashMap<File, MetaData>();
+    private static final Map<File, MetaData> cache = new ConcurrentHashMap<File, MetaData>();
 
     public static MetaData get(File file) {
         if (!cache.containsKey(file)){
@@ -27,10 +27,16 @@ public class MetaDataStore {
                 AudioFile f = AudioFileIO.read(file);
                 Tag tag = f.getTag();
                 AudioHeader audioHeader = f.getAudioHeader();
-                cache.put(file, new MetaData(tag.getFirst(FieldKey.ARTIST), tag.getFirst(FieldKey.ALBUM), tag.getFirst(FieldKey.TITLE), audioHeader.getTrackLength()));
+                cache.put(file, new MetaData(
+                                tag.getFirst(FieldKey.ARTIST),
+                                tag.getFirst(FieldKey.ALBUM),
+                                tag.getFirst(FieldKey.TITLE),
+                                tag.getFirst(FieldKey.RATING),
+                                audioHeader.getTrackLength()
+                ));
             } catch (Exception e) {
                 System.err.println("Could not read tags: " + e.getMessage());
-                cache.put(file, new MetaData("", "", file.getAbsolutePath(), 0));
+                cache.put(file, new MetaData("", "", file.getAbsolutePath(), "0", 0));
             }
         }
         return cache.get(file);

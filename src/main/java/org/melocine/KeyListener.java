@@ -24,7 +24,6 @@ public class KeyListener{
                 while (true) {
                     try {
                         int tmp = System.in.read();
-                        System.err.println("Key pressed: " + tmp);
                         switch (tmp){
                             case 3:
                                 eventDispatcher.dispatch(new ShutdownEvent());
@@ -42,11 +41,19 @@ public class KeyListener{
                                 eventDispatcher.dispatch(new NextTrackEvent());
                                 break;
                             case 97:
-                                eventDispatcher.dispatch(new CursorUpEvent());
+                                eventDispatcher.dispatch(new CursorUpEvent(1));
                                 break;
                             case 122:
-                                eventDispatcher.dispatch(new CursorDownEvent());
+                                eventDispatcher.dispatch(new CursorDownEvent(1));
                                 break;
+                            case 65:
+                                eventDispatcher.dispatch(new CursorUpEvent(Display.PLAYLIST_DISPLAY_SIZE));
+                                break;
+                            case 90:
+                                eventDispatcher.dispatch(new CursorDownEvent(Display.PLAYLIST_DISPLAY_SIZE));
+                                break;
+                            default:
+                                System.err.println("Unknown key pressed: " + tmp);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();

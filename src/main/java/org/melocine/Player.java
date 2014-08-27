@@ -116,6 +116,19 @@ public class Player {
         nowPlaying.addAll(files);
         currentPlaying = nowPlaying.get(0);
         play();
+        triggerBGMetaCacheBuilding(files);
+    }
+
+    private void triggerBGMetaCacheBuilding(final Collection<File> files) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (File file : files) {
+                    MetaDataStore.get(file);
+                    Thread.yield();
+                }
+            }
+        }).start();
     }
 
     public void next() {

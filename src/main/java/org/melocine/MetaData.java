@@ -10,10 +10,13 @@ import javafx.collections.ObservableMap;
  * To change this template use File | Settings | File Templates.
  */
 public class MetaData {
+    public static final int MAX_RATING = 5;
+
     private ObservableMap<String, Object> metadata;
     public final String artist;
     public final String title;
     public final String album;
+    public Integer rating;
     public final Long duration;
 
     public MetaData(ObservableMap<String, Object> metadata, Double duration) {
@@ -24,11 +27,16 @@ public class MetaData {
         this.duration = duration.longValue();
     }
 
-    public MetaData(String artist, String album, String title, Integer duration) {
+    public MetaData(String artist, String album, String title, String rating, Integer duration) {
         this.artist = artist;
         this.album = album;
         this.title = title;
+        this.rating = convertToStarRating(rating);
         this.duration = duration.longValue();
+    }
+
+    private int convertToStarRating(String rating) {
+        return Integer.parseInt(rating) * MAX_RATING / 255;
     }
 
 

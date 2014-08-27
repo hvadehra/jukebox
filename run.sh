@@ -3,7 +3,9 @@
 cd ~/Documents/player
 echo "Building..."
 mvn install > build.log
-echo "Launching..."
+rows=`tput lines`
+cols=`tput cols`
+echo "Launching with size $rows x $cols ..."
 #stty raw
-java -classpath 'target/classes:lib/*' org.melocine.App $1 2>debug.log
+java -classpath 'target/classes:lib/*' org.melocine.App $cols $rows $1 2>debug.log
 stty cooked

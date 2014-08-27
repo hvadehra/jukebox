@@ -2,6 +2,7 @@ package org.melocine;
 
 import com.googlecode.lanterna.TerminalFacade;
 import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.screen.ScreenCharacterStyle;
 import com.googlecode.lanterna.screen.ScreenWriter;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalSize;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.util.List;
 
 import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
+import static org.melocine.MetaData.MAX_RATING;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,14 +23,18 @@ import static org.apache.commons.lang3.time.DurationFormatUtils.formatDuration;
  * To change this template use File | Settings | File Templates.
  */
 public class Display {
-
-    private static final int PROGRESS_WIDTH = 100;
-    private static final int TERMINAL_WIDTH = 150;
-    private static final int TERMINAL_HEIGHT = 50;
+    private static int TERMINAL_WIDTH = 200;
+    private static int TERMINAL_HEIGHT = 70;
+    private static int PROGRESS_WIDTH = TERMINAL_WIDTH;
+    public static int PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - 10;
     private static final int PLAYLIST_YPOS = 5;
-    private static final int PLAYLIST_DISPLAY_SIZE = 40;
     private static final int PROGRESS_BAR_YPOS = 1;
     private static final int NOW_PLAYING_YPOS = 2;
+    private static int PLAYLIST_INDEX_WIDTH = 4;
+    private static int PLAYLIST_TITLE_WIDTH = 40;
+    private static int PLAYLIST_ARTIST_WIDTH = 35;
+    private static int PLAYLIST_ALBUM_WIDTH = 55;
+    private static int PLAYLIST_RATING_WIDTH = 10;
 
     private final EventDispatcher eventDispatcher;
     private final Screen screen;
@@ -39,10 +45,11 @@ public class Display {
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
 
-    public Display(EventDispatcher eventDispatcher) {
+    public Display(EventDispatcher eventDispatcher, int width, int height) {
         this.eventDispatcher = eventDispatcher;
         Terminal terminal = TerminalFacade.createTerminal();
-        this.screen = new Screen(terminal, new TerminalSize(TERMINAL_WIDTH, TERMINAL_HEIGHT));
+        terminal.addResizeListener(terminalResizeListener());
+        screen = new Screen(terminal, width, height);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -50,7 +57,31 @@ public class Display {
             }
         }).start();
         this.screenWriter = new ScreenWriter(screen);
+        onTerminalResize(new TerminalSize(width, height));
         registerForEvents();
+    }
+
+    private Terminal.ResizeListener terminalResizeListener() {
+        return new Terminal.ResizeListener() {
+            @Override
+            public void onResized(TerminalSize newSize) {
+                onTerminalResize(newSize);
+            }
+        };
+    }
+
+    private void onTerminalResize(TerminalSize newSize) {
+        TERMINAL_WIDTH = newSize.getColumns();
+        TERMINAL_HEIGHT = newSize.getRows();
+        PROGRESS_WIDTH = TERMINAL_WIDTH;
+        PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - 8;
+        PLAYLIST_INDEX_WIDTH = 4;
+        PLAYLIST_RATING_WIDTH = 10;
+        PLAYLIST_TITLE_WIDTH = (TERMINAL_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 3;
+        PLAYLIST_ARTIST_WIDTH = (TERMINAL_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 4;
+        PLAYLIST_ALBUM_WIDTH = (TERMINAL_WIDTH - PLAYLIST_ARTIST_WIDTH - PLAYLIST_TITLE_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 8);
+        displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
+        screen.refresh();
     }
 
     private void registerForEvents() {
@@ -59,7 +90,7 @@ public class Display {
             public void receive(NowPlayingEvent event) {
                 playlist = event.playlist;
                 currentPlayingIndex = event.index;
-                if (displayBeginIndex < currentPlayingIndex && currentPlayingIndex < displayEndIndex){
+                if (displayBeginIndex < currentPlayingIndex && currentPlayingIndex < displayEndIndex) {
                     displayBeginIndex = (displayEndIndex - currentPlayingIndex) < 5 && displayEndIndex < playlist.size() ? displayBeginIndex + 1 : displayBeginIndex;
                     displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
                 }
@@ -78,9 +109,10 @@ public class Display {
         eventDispatcher.register(PlayTimeChangedEvent.class, new EventDispatcher.Receiver<PlayTimeChangedEvent>() {
             @Override
             public void receive(PlayTimeChangedEvent event) {
-                String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH));
-                String remaining = StringUtils.repeat("-", (int) (((event.duration - event.newValue) / event.duration) * PROGRESS_WIDTH));
-                setDefaultStyle();
+                String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH) - 6);
+                String remaining = StringUtils.repeat("-", PROGRESS_WIDTH - done.length() - 12);
+                setDefaultEntryColors();
+                clearLine(PROGRESS_BAR_YPOS);
                 screenWriter.drawString(1, PROGRESS_BAR_YPOS, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
                 screen.refresh();
             }
@@ -89,8 +121,10 @@ public class Display {
         eventDispatcher.register(CursorUpEvent.class, new EventDispatcher.Receiver<CursorUpEvent>() {
             @Override
             public void receive(CursorUpEvent event) {
-                currentSelectedIndex = (currentSelectedIndex > 0) ? (currentSelectedIndex - 1) : currentSelectedIndex;
-                displayBeginIndex = (currentSelectedIndex - displayBeginIndex) < 5 && displayBeginIndex > 0 ? displayBeginIndex - 1 : displayBeginIndex;
+                int scrollPosition = currentSelectedIndex - displayBeginIndex;
+                currentSelectedIndex = (currentSelectedIndex > event.numLines) ? (currentSelectedIndex - event.numLines) : 0;
+                displayBeginIndex = ((displayBeginIndex > (currentSelectedIndex - scrollPosition)) && (scrollPosition - event.numLines < 5)) ? currentSelectedIndex - scrollPosition : displayBeginIndex;
+                displayBeginIndex = (displayBeginIndex < 0) ? 0 : displayBeginIndex;
                 displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
                 updateScreen();
             }
@@ -99,8 +133,11 @@ public class Display {
         eventDispatcher.register(CursorDownEvent.class, new EventDispatcher.Receiver<CursorDownEvent>() {
             @Override
             public void receive(CursorDownEvent event) {
-                currentSelectedIndex = (currentSelectedIndex < playlist.size()) ? (currentSelectedIndex + 1) : currentSelectedIndex;
-                displayBeginIndex = (displayEndIndex - currentSelectedIndex) < 5 && displayEndIndex < playlist.size() ? displayBeginIndex + 1 : displayBeginIndex;
+                int scrollPosition = currentSelectedIndex - displayBeginIndex;
+                currentSelectedIndex = (currentSelectedIndex < playlist.size() - event.numLines - 1) ? (currentSelectedIndex + event.numLines) : playlist.size() - 1;
+                displayBeginIndex = ((displayBeginIndex < (currentSelectedIndex - scrollPosition)) && ((scrollPosition + event.numLines) > (PLAYLIST_DISPLAY_SIZE - 5))) ? currentSelectedIndex - scrollPosition : displayBeginIndex;
+                displayBeginIndex = (displayBeginIndex + PLAYLIST_DISPLAY_SIZE > playlist.size()) ? playlist.size() - PLAYLIST_DISPLAY_SIZE : displayBeginIndex;
+                displayBeginIndex = (displayBeginIndex < 0) ? 0 : displayBeginIndex;
                 displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
                 updateScreen();
             }
@@ -122,8 +159,33 @@ public class Display {
 
     private void drawNowPlaying() {
         MetaData metaData = MetaDataStore.get(playlist.get(currentPlayingIndex));
-        screenWriter.drawString(1, NOW_PLAYING_YPOS, metaData.title + " (" + formatTime(metaData.duration) + ")");
-        screenWriter.drawString(1, NOW_PLAYING_YPOS+1, metaData.artist + " [" + metaData.album + "]");
+        drawNowPlayingTrackInfo(metaData);
+        drawNowPlayingRating(metaData);
+    }
+
+    private void drawNowPlayingTrackInfo(MetaData metaData) {
+        setNowPlayingColors();
+        clearLine(NOW_PLAYING_YPOS);
+        String trackInfo = metaData.artist + " - " + metaData.title + " [" + metaData.album + "]" + " (" + formatTime(metaData.duration) + ")";
+        screenWriter.drawString(1, NOW_PLAYING_YPOS, alignCentre(trackInfo, TERMINAL_WIDTH));
+    }
+
+    private String alignCentre(String string, int width) {
+        if (string.length() > width) return string;
+        int padding = width - string.length();
+        return StringUtils.repeat(" ", padding/2) + string + StringUtils.repeat(" ", padding/2);
+    }
+
+    private void drawNowPlayingRating(MetaData metaData) {
+        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+        screenWriter.setForegroundColor(Terminal.Color.YELLOW);
+        clearLine(NOW_PLAYING_YPOS + 1);
+        screenWriter.drawString(1, NOW_PLAYING_YPOS + 1, alignCentre(getRatingAsString(metaData.rating), TERMINAL_WIDTH));
+    }
+
+    private String getRatingAsString(Integer rating) {
+        String stars = StringUtils.repeat("\u2605 ", rating);
+        return (rating < MAX_RATING) ? stars.concat(StringUtils.repeat("\u2606 ", MAX_RATING - rating)) : stars;
     }
 
     private String formatTime(Long durationSeconds) {
@@ -140,30 +202,66 @@ public class Display {
             int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
             File entry = playlist.get(i);
             MetaData metaData = MetaDataStore.get(entry);
-            String entryDisplay = (i+1) + ". " + metaData.artist + " - " + metaData.title + " [" + metaData.album + "]";
-            setDefaultStyle();
+            String entryDisplay = createEntryDisplay(i, metaData);
+            ScreenCharacterStyle[] charStyle = setDefaultEntryColors();
             if (currentSelectedIndex == i){
-                setCurrentSelectedStyle();
+                charStyle = setCurrentSelectedEntryColors();
             }
             if (i == currentPlayingIndex){
-                setCurrentPlayingStyle();
+                charStyle = setCurrentPlayingEntryColors();
             }
-            screenWriter.drawString(1, displayPos, StringUtils.repeat(" ", TERMINAL_WIDTH));
-            screenWriter.drawString(1, displayPos, entryDisplay);
+            clearLine(displayPos);
+            screenWriter.drawString(1, displayPos, entryDisplay, charStyle);
         }
     }
 
-    private void setCurrentSelectedStyle() {
+    private void clearLine(int y) {
+        screenWriter.drawString(0, y, StringUtils.repeat(" ", TERMINAL_WIDTH));
+    }
+
+    private String createEntryDisplay(int index, MetaData metaData) {
+        String format =
+                "%" + PLAYLIST_INDEX_WIDTH + "d  " +
+                "%-" + PLAYLIST_TITLE_WIDTH + "s " +
+                "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
+                "%-" + PLAYLIST_ALBUM_WIDTH + "s " +
+                "%-" + PLAYLIST_RATING_WIDTH + "s";
+        return String.format(
+                format,
+                index+1,
+                truncate(metaData.title, PLAYLIST_TITLE_WIDTH),
+                truncate(metaData.artist, PLAYLIST_ARTIST_WIDTH),
+                truncate(metaData.album, PLAYLIST_ALBUM_WIDTH),
+                getRatingAsString(metaData.rating)
+        );
+    }
+
+    private String truncate(String string, int maxWidth) {
+        if (string.length() > maxWidth)
+            return string.substring(0, maxWidth);
+        return string;
+    }
+
+    private ScreenCharacterStyle[] setNowPlayingColors() {
+        screenWriter.setForegroundColor(Terminal.Color.DEFAULT);
+        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+        return new ScreenCharacterStyle[]{ScreenCharacterStyle.Bold};
+    }
+
+    private ScreenCharacterStyle[] setCurrentSelectedEntryColors() {
         screenWriter.setBackgroundColor(Terminal.Color.WHITE);
         screenWriter.setForegroundColor(Terminal.Color.BLACK);
+        return new ScreenCharacterStyle[]{};
     }
 
-    private void setDefaultStyle() {
+    private ScreenCharacterStyle[] setDefaultEntryColors() {
         screenWriter.setForegroundColor(Terminal.Color.WHITE);
         screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+        return new ScreenCharacterStyle[]{};
     }
 
-    private void setCurrentPlayingStyle() {
-        screenWriter.setForegroundColor(Terminal.Color.RED);
+    private ScreenCharacterStyle[] setCurrentPlayingEntryColors() {
+        screenWriter.setForegroundColor(Terminal.Color.DEFAULT);
+        return new ScreenCharacterStyle[]{ScreenCharacterStyle.Bold};
     }
 }

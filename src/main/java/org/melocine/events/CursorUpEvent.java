@@ -8,4 +8,9 @@ package org.melocine.events;
  * To change this template use File | Settings | File Templates.
  */
 public class CursorUpEvent implements EventDispatcher.Event{
+    public final int numLines;
+
+    public CursorUpEvent(int numLines) {
+        this.numLines = numLines;
+    }
 }
