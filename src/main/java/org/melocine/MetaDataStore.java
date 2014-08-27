@@ -8,10 +8,7 @@ import org.jaudiotagger.tag.Tag;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.ShutdownEvent;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MetaDataStore {
 
-    private Map<File, MetaData> cache = new ConcurrentHashMap<File, MetaData>();
+    private Map<String, MetaData> cache = new ConcurrentHashMap<String, MetaData>();
 
     public MetaDataStore(EventDispatcher eventDispatcher){
         loadCacheFromDisk();
@@ -32,19 +29,19 @@ public class MetaDataStore {
     }
 
     private void loadCacheFromDisk() {
-        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
         try{
-            FileOutputStream fout = new FileOutputStream("metadata.cache", true);
-            oos = new ObjectOutputStream(fout);
-            oos.writeObject(cache);
+            FileInputStream fin = new FileInputStream("metadata.cache");
+            ois = new ObjectInputStream(fin);
+            cache = (Map<String, MetaData>) ois.readObject();
         } catch (Exception e) {
             System.err.println("Could not load metadata from disk: " + e.getMessage());
         }
-        if(oos != null){
+        if (ois != null){
             try {
-                oos.close();
+                ois.close();
             } catch (IOException e) {
-                System.err.println("Could not close output stream: " + e.getMessage());
+                System.err.println("Could not close input stream: " + e.getMessage());
             }
         }
     }
@@ -59,31 +56,39 @@ public class MetaDataStore {
     }
 
     private void writeMetadataToDisk() {
+        ObjectOutputStream oos = null;
         try {
             FileOutputStream fout = new FileOutputStream("metadata.cache");
-            ObjectOutputStream oos = new ObjectOutputStream(fout);
+            oos = new ObjectOutputStream(fout);
             oos.writeObject(cache);
         } catch (Exception e) {
             System.err.println("Could not write metadata cache to disk: " + e.getMessage());
         }
+        if (oos != null){
+            try {
+                oos.close();
+            } catch (IOException e) {
+                System.err.println("Could not close output stream: " + e.getMessage());
+            }
+        }
     }
 
-    public MetaData get(File file) {
+    public MetaData get(String file) {
         if (!cache.containsKey(file)){
             try {
-                AudioFile f = AudioFileIO.read(file);
+                AudioFile f = AudioFileIO.read(new File(file));
                 Tag tag = f.getTag();
                 AudioHeader audioHeader = f.getAudioHeader();
                 cache.put(file, new MetaData(
-                                tag.getFirst(FieldKey.ARTIST),
-                                tag.getFirst(FieldKey.ALBUM),
-                                tag.getFirst(FieldKey.TITLE),
-                                tag.getFirst(FieldKey.RATING),
-                                audioHeader.getTrackLength()
+                        tag.getFirst(FieldKey.ARTIST),
+                        tag.getFirst(FieldKey.ALBUM),
+                        tag.getFirst(FieldKey.TITLE),
+                        tag.getFirst(FieldKey.RATING),
+                        audioHeader.getTrackLength()
                 ));
             } catch (Exception e) {
                 System.err.println("Could not read tags: " + e.getMessage());
-                cache.put(file, new MetaData("", "", file.getAbsolutePath(), "0", 0));
+                cache.put(file, new MetaData("", "", file, "0", 0));
             }
         }
         return cache.get(file);

@@ -111,8 +111,8 @@ public class Display {
         eventDispatcher.register(PlayTimeChangedEvent.class, new EventDispatcher.Receiver<PlayTimeChangedEvent>() {
             @Override
             public void receive(PlayTimeChangedEvent event) {
-                String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * PROGRESS_WIDTH) - 6);
-                String remaining = StringUtils.repeat("-", PROGRESS_WIDTH - done.length() - 12);
+                String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * (PROGRESS_WIDTH - 9)));
+                String remaining = StringUtils.repeat("-", PROGRESS_WIDTH - done.length() - 9);
                 setDefaultEntryColors();
                 clearLine(PROGRESS_BAR_YPOS);
                 screenWriter.drawString(1, PROGRESS_BAR_YPOS, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
@@ -160,7 +160,7 @@ public class Display {
     }
 
     private void drawNowPlaying() {
-        MetaData metaData = metaDataStore.get(playlist.get(currentPlayingIndex));
+        MetaData metaData = metaDataStore.get(playlist.get(currentPlayingIndex).getAbsolutePath());
         drawNowPlayingTrackInfo(metaData);
         drawNowPlayingRating(metaData);
     }
@@ -203,7 +203,7 @@ public class Display {
         for (int i = displayBeginIndex; i < displayEndIndex; i++) {
             int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
             File entry = playlist.get(i);
-            MetaData metaData = metaDataStore.get(entry);
+            MetaData metaData = metaDataStore.get(entry.getAbsolutePath());
             String entryDisplay = createEntryDisplay(i, metaData);
             ScreenCharacterStyle[] charStyle = setDefaultEntryColors();
             if (currentSelectedIndex == i){

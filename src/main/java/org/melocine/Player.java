@@ -90,8 +90,7 @@ public class Player {
             @Override
             public void run() {
                 Duration duration = mediaPlayer.getMedia().getDuration();
-                MetaData metaData = new MetaData(mediaPlayer.getMedia().getMetadata(), duration.toSeconds());
-                System.err.println("test2");
+                MetaData metaData = metaDataStore.get(currentPlaying.getAbsolutePath());
                 eventDispatcher.dispatch(new NowPlayingEvent(nowPlaying.indexOf(currentPlaying), metaData, duration, nowPlaying));
             }
         });
@@ -104,7 +103,7 @@ public class Player {
                     Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
                     eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValueSeconds));
                     if (newValueSeconds.intValue() == duration.intValue()/2) {
-                        eventDispatcher.dispatch(new ScrobbleTrackEvent(new MetaData(mediaPlayer.getMedia().getMetadata(), duration)));
+                        eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
                     }
                 }
             }
@@ -118,7 +117,7 @@ public class Player {
         nowPlaying.addAll(files);
         currentPlaying = nowPlaying.get(0);
         play();
-        triggerBGMetaCacheBuilding(files);
+//        triggerBGMetaCacheBuilding(files);
     }
 
     private void triggerBGMetaCacheBuilding(final Collection<File> files) {
@@ -126,7 +125,7 @@ public class Player {
             @Override
             public void run() {
                 for (File file : files) {
-                    metaDataStore.get(file);
+                    metaDataStore.get(file.getAbsolutePath());
                     Thread.yield();
                 }
             }

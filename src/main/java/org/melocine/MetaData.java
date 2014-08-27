@@ -2,6 +2,8 @@ package org.melocine;
 
 import javafx.collections.ObservableMap;
 
+import java.io.Serializable;
+
 /**
  * Created by IntelliJ IDEA.
  * User: hemanshu.v
@@ -9,7 +11,7 @@ import javafx.collections.ObservableMap;
  * Time: 4:56 AM
  * To change this template use File | Settings | File Templates.
  */
-public class MetaData {
+public class MetaData implements Serializable {
     public static final int MAX_RATING = 5;
 
     private ObservableMap<String, Object> metadata;
