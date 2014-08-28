@@ -6,6 +6,7 @@ import com.googlecode.lanterna.screen.ScreenCharacterStyle;
 import com.googlecode.lanterna.screen.ScreenWriter;
 import com.googlecode.lanterna.terminal.Terminal;
 import com.googlecode.lanterna.terminal.TerminalSize;
+import com.googlecode.lanterna.terminal.text.UnixTerminal;
 import org.apache.commons.lang3.StringUtils;
 import org.melocine.events.*;
 
@@ -49,7 +50,7 @@ public class Display {
     public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
         this.metaDataStore = metaDataStore;
-        Terminal terminal = TerminalFacade.createTerminal();
+        UnixTerminal terminal = TerminalFacade.createUnixTerminal();
         terminal.addResizeListener(terminalResizeListener());
         screen = new Screen(terminal, width, height);
         new Thread(new Runnable() {
@@ -59,8 +60,16 @@ public class Display {
             }
         }).start();
         this.screenWriter = new ScreenWriter(screen);
+        clearScreen();
         onTerminalResize(new TerminalSize(width, height));
         registerForEvents();
+    }
+
+    private void clearScreen() {
+        screenWriter.setBackgroundColor(Terminal.Color.BLACK);
+        screenWriter.setForegroundColor(Terminal.Color.BLACK);
+        screenWriter.fillScreen(' ');
+        screen.refresh();
     }
 
     private Terminal.ResizeListener terminalResizeListener() {
@@ -245,7 +254,7 @@ public class Display {
     }
 
     private ScreenCharacterStyle[] setNowPlayingColors() {
-        screenWriter.setForegroundColor(Terminal.Color.DEFAULT);
+        screenWriter.setForegroundColor(Terminal.Color.WHITE);
         screenWriter.setBackgroundColor(Terminal.Color.BLACK);
         return new ScreenCharacterStyle[]{ScreenCharacterStyle.Bold};
     }
@@ -263,7 +272,7 @@ public class Display {
     }
 
     private ScreenCharacterStyle[] setCurrentPlayingEntryColors() {
-        screenWriter.setForegroundColor(Terminal.Color.DEFAULT);
+        screenWriter.setForegroundColor(Terminal.Color.WHITE);
         return new ScreenCharacterStyle[]{ScreenCharacterStyle.Bold};
     }
 }
