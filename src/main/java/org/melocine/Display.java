@@ -36,6 +36,7 @@ public class Display {
     private static int PLAYLIST_ARTIST_WIDTH = 35;
     private static int PLAYLIST_ALBUM_WIDTH = 55;
     private static int PLAYLIST_RATING_WIDTH = 10;
+    private static final int MAX_VOLUME_SIZE = 15;
 
     private final EventDispatcher eventDispatcher;
     private final MetaDataStore metaDataStore;
@@ -46,7 +47,7 @@ public class Display {
     private int currentSelectedIndex = 0;
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
-    private int volume = 10;
+    private int volume = MAX_VOLUME_SIZE;
 
     public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
@@ -165,7 +166,7 @@ public class Display {
         eventDispatcher.register(VolumeChangedEvent.class, new EventDispatcher.Receiver<VolumeChangedEvent>() {
             @Override
             public void receive(VolumeChangedEvent event) {
-                volume = Double.valueOf(event.volume*10).intValue();
+                volume = Double.valueOf(event.volume * MAX_VOLUME_SIZE).intValue();
                 updateScreen();
             }
         });
@@ -195,7 +196,7 @@ public class Display {
 
     private void drawVolume() {
         setDefaultEntryColors();
-        String volumeSlider = StringUtils.repeat("\u25CF", volume) + "\u2B24" + StringUtils.repeat("\u25CB",10-volume);
+        String volumeSlider = StringUtils.repeat("\u25CF", volume) + "\u2B24" + StringUtils.repeat("\u25CB",MAX_VOLUME_SIZE-volume);
         screenWriter.drawString(1, NOW_PLAYING_YPOS, volumeSlider);
     }
 
