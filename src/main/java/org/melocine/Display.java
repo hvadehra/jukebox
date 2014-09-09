@@ -169,6 +169,14 @@ public class Display {
                 updateScreen();
             }
         });
+
+        eventDispatcher.register(PlayListChangedEvent.class, new EventDispatcher.Receiver<PlayListChangedEvent>() {
+            @Override
+            public void receive(PlayListChangedEvent event) {
+                playlist = event.playlist;
+                updateScreen();
+            }
+        });
     }
 
     private void updateScreen() {

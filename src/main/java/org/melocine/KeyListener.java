@@ -52,6 +52,9 @@ public class KeyListener{
                             case 122:
                                 eventDispatcher.dispatch(new CursorDownEvent(1));
                                 break;
+                            case 82:
+                                eventDispatcher.dispatch(new RandomizePlaylistAfterCurrent());
+                                break;
                             case 65:
                                 eventDispatcher.dispatch(new CursorUpEvent(Display.PLAYLIST_DISPLAY_SIZE));
                                 break;

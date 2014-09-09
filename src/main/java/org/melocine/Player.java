@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by IntelliJ IDEA.
@@ -97,6 +98,14 @@ public class Player {
                 eventDispatcher.dispatch(new VolumeChangedEvent(volume));
             }
         });
+
+        eventDispatcher.register(RandomizePlaylistAfterCurrent.class, new EventDispatcher.Receiver<RandomizePlaylistAfterCurrent>() {
+            @Override
+            public void receive(RandomizePlaylistAfterCurrent event) {
+                randomizeListAfter(nowPlaying.indexOf(currentPlaying));
+                eventDispatcher.dispatch(new PlayListChangedEvent(nowPlaying));
+            }
+        });
     }
 
     private void playSelectedTrack(int currentSelectedIndex) {
@@ -128,10 +137,10 @@ public class Player {
             public void changed(ObservableValue<? extends Duration> observableValue, Duration oldValue, Duration newValue) {
                 Double oldValueSeconds = oldValue.toSeconds();
                 Double newValueSeconds = newValue.toSeconds();
-                if (newValueSeconds.intValue() != oldValueSeconds.intValue()){
+                if (newValueSeconds.intValue() != oldValueSeconds.intValue()) {
                     Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
                     eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValueSeconds));
-                    if (newValueSeconds.intValue() == duration.intValue()/2) {
+                    if (newValueSeconds.intValue() == duration.intValue() / 2) {
                         eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
                     }
                 }
@@ -189,6 +198,17 @@ public class Player {
             mediaPlayer.play();
         else
             mediaPlayer.pause();
+    }
+
+    private void randomizeListAfter(int after) {
+        if (after >= nowPlaying.size() - 2) return;
+
+        int begin = after + 1;
+        int end = nowPlaying.size();
+        int random = begin + new Random().nextInt(end - begin);
+        File track = nowPlaying.remove(random);
+        nowPlaying.add(begin, track);
+        randomizeListAfter(after+1);
     }
 
 }
