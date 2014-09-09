@@ -61,6 +61,9 @@ public class KeyListener{
                             case 90:
                                 eventDispatcher.dispatch(new CursorDownEvent(Display.PLAYLIST_DISPLAY_SIZE));
                                 break;
+                            case 127:
+                                eventDispatcher.dispatch(new RemoveSelectedTrackEvent());
+                                break;
                             default:
                                 System.err.println("Unknown key pressed: " + tmp);
                         }

@@ -106,6 +106,13 @@ public class Player {
                 eventDispatcher.dispatch(new PlayListChangedEvent(nowPlaying));
             }
         });
+        
+        eventDispatcher.register(RemoveTrackAtIndexFromNowPlaying.class, new EventDispatcher.Receiver<RemoveTrackAtIndexFromNowPlaying>() {
+            @Override
+            public void receive(RemoveTrackAtIndexFromNowPlaying event) {
+                removeTrackAt(event.currentSelectedIndex);
+            }
+        });
     }
 
     private void playSelectedTrack(int currentSelectedIndex) {
@@ -209,6 +216,19 @@ public class Player {
         File track = nowPlaying.remove(random);
         nowPlaying.add(begin, track);
         randomizeListAfter(after+1);
+    }
+
+    private void removeTrackAt(int index) {
+        if (index == nowPlaying.indexOf(currentPlaying)){
+            if (index == nowPlaying.size()-1){
+                mediaPlayer.stop();
+            }
+            else{
+                next();
+            }
+        }
+        nowPlaying.remove(index);
+        eventDispatcher.dispatch(new PlayListChangedEvent(nowPlaying));
     }
 
 }

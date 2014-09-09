@@ -177,6 +177,13 @@ public class Display {
                 updateScreen();
             }
         });
+
+        eventDispatcher.register(RemoveSelectedTrackEvent.class, new EventDispatcher.Receiver<RemoveSelectedTrackEvent>() {
+            @Override
+            public void receive(RemoveSelectedTrackEvent event) {
+                eventDispatcher.dispatch(new RemoveTrackAtIndexFromNowPlaying(currentSelectedIndex));
+            }
+        });
     }
 
     private void updateScreen() {
