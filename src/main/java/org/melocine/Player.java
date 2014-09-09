@@ -119,14 +119,14 @@ public class Player {
         eventDispatcher.register(SeekBackwardEvent.class, new EventDispatcher.Receiver<SeekBackwardEvent>() {
             @Override
             public void receive(SeekBackwardEvent event) {
-                mediaPlayer.seek(new Duration(-5000));
+                mediaPlayer.seek(mediaPlayer.getCurrentTime().subtract(new Duration(5000)));
             }
         });
 
         eventDispatcher.register(SeekForwardEvent.class, new EventDispatcher.Receiver<SeekForwardEvent>() {
             @Override
             public void receive(SeekForwardEvent event) {
-                mediaPlayer.seek(new Duration(5000));
+                mediaPlayer.seek(mediaPlayer.getCurrentTime().add(new Duration(5000)));
             }
         });
     }
