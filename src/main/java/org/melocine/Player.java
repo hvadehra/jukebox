@@ -115,6 +115,20 @@ public class Player {
                 removeTrackAt(event.currentSelectedIndex);
             }
         });
+
+        eventDispatcher.register(SeekBackwardEvent.class, new EventDispatcher.Receiver<SeekBackwardEvent>() {
+            @Override
+            public void receive(SeekBackwardEvent event) {
+                mediaPlayer.seek(new Duration(-5000));
+            }
+        });
+
+        eventDispatcher.register(SeekForwardEvent.class, new EventDispatcher.Receiver<SeekForwardEvent>() {
+            @Override
+            public void receive(SeekForwardEvent event) {
+                mediaPlayer.seek(new Duration(5000));
+            }
+        });
     }
 
     private void playSelectedTrack(int currentSelectedIndex) {
@@ -149,9 +163,6 @@ public class Player {
                 if (newValueSeconds.intValue() != oldValueSeconds.intValue()) {
                     Double duration = mediaPlayer.getMedia().getDuration().toSeconds();
                     eventDispatcher.dispatch(new PlayTimeChangedEvent(duration, newValueSeconds));
-                    if (newValueSeconds.intValue() == duration.intValue() / 2) {
-                        eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
-                    }
                 }
             }
         });
@@ -181,6 +192,9 @@ public class Player {
     }
 
     public void next() {
+        if (mediaPlayer.getCurrentTime().toSeconds() >= 30 || mediaPlayer.getCurrentTime().toSeconds() >= mediaPlayer.getMedia().getDuration().toSeconds()/2){
+            eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
+        }
         currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
         disposeMediaPlayer();
         play();

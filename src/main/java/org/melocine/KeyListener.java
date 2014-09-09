@@ -64,6 +64,12 @@ public class KeyListener{
                             case 127:
                                 eventDispatcher.dispatch(new RemoveSelectedTrackEvent());
                                 break;
+                            case 91:
+                                eventDispatcher.dispatch(new SeekForwardEvent());
+                                break;
+                            case 93:
+                                eventDispatcher.dispatch(new SeekBackwardEvent());
+                                break;
                             default:
                                 System.err.println("Unknown key pressed: " + tmp);
                         }
