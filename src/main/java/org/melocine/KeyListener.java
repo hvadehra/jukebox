@@ -34,6 +34,12 @@ public class KeyListener{
                             case 32:
                                 eventDispatcher.dispatch(new TogglePlayPauseEvent());
                                 break;
+                            case 45:
+                                eventDispatcher.dispatch(new VolumeDownEvent());
+                                break;
+                            case 61:
+                                eventDispatcher.dispatch(new VolumeUpEvent());
+                                break;
                             case 98:
                                 eventDispatcher.dispatch(new PreviousTrackEvent());
                                 break;

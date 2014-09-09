@@ -27,6 +27,7 @@ public class Player {
     private MediaPlayer mediaPlayer;
     private final EventDispatcher eventDispatcher;
     private final MetaDataStore metaDataStore;
+    private double volume = 1.0D;
 
     public Player(EventDispatcher eventDispatcher, MetaDataStore metaDataStore) {
         this.eventDispatcher = eventDispatcher;
@@ -66,6 +67,34 @@ public class Player {
             @Override
             public void receive(PlaySelectedTrackEvent event) {
                 playSelectedTrack(event.currentSelectedIndex);
+            }
+        });
+
+        eventDispatcher.register(VolumeDownEvent.class, new EventDispatcher.Receiver<VolumeDownEvent>() {
+            @Override
+            public void receive(VolumeDownEvent event) {
+                if (volume <= 0.1){
+                    volume = 0;
+                }
+                else{
+                    volume -= 0.1;
+                }
+                mediaPlayer.setVolume(volume);
+                eventDispatcher.dispatch(new VolumeChangedEvent(volume));
+            }
+        });
+
+        eventDispatcher.register(VolumeUpEvent.class, new EventDispatcher.Receiver<VolumeUpEvent>() {
+            @Override
+            public void receive(VolumeUpEvent event) {
+                if (volume >= 0.9){
+                    volume = 1;
+                }
+                else{
+                    volume += 0.1;
+                }
+                mediaPlayer.setVolume(volume);
+                eventDispatcher.dispatch(new VolumeChangedEvent(volume));
             }
         });
     }
@@ -108,6 +137,7 @@ public class Player {
                 }
             }
         });
+        mediaPlayer.setVolume(volume);
         mediaPlayer.play();
     }
 

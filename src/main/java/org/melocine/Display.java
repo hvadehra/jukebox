@@ -46,6 +46,7 @@ public class Display {
     private int currentSelectedIndex = 0;
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
+    private int volume = 10;
 
     public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
@@ -120,8 +121,8 @@ public class Display {
         eventDispatcher.register(PlayTimeChangedEvent.class, new EventDispatcher.Receiver<PlayTimeChangedEvent>() {
             @Override
             public void receive(PlayTimeChangedEvent event) {
-                String done = StringUtils.repeat("=", (int) ((event.newValue / event.duration) * (PROGRESS_WIDTH - 11)));
-                String remaining = StringUtils.repeat("-", PROGRESS_WIDTH - done.length() - 11);
+                String done = StringUtils.repeat("\u2550", (int) ((event.newValue / event.duration) * (PROGRESS_WIDTH - 11)));
+                String remaining = StringUtils.repeat("\u2015", PROGRESS_WIDTH - done.length() - 11);
                 setDefaultEntryColors();
                 clearLine(PROGRESS_BAR_YPOS);
                 screenWriter.drawString(1, PROGRESS_BAR_YPOS, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
@@ -160,12 +161,27 @@ public class Display {
                 eventDispatcher.dispatch(new PlaySelectedTrackEvent(currentSelectedIndex));
             }
         });
+
+        eventDispatcher.register(VolumeChangedEvent.class, new EventDispatcher.Receiver<VolumeChangedEvent>() {
+            @Override
+            public void receive(VolumeChangedEvent event) {
+                volume = Double.valueOf(event.volume*10).intValue();
+                updateScreen();
+            }
+        });
     }
 
     private void updateScreen() {
         drawNowPlaying();
+        drawVolume();
         drawPlaylist();
         screen.refresh();
+    }
+
+    private void drawVolume() {
+        setDefaultEntryColors();
+        String volumeSlider = StringUtils.repeat("\u25CF", volume) + "\u2B24" + StringUtils.repeat("\u25CB",10-volume);
+        screenWriter.drawString(1, NOW_PLAYING_YPOS, volumeSlider);
     }
 
     private void drawNowPlaying() {
