@@ -29,6 +29,7 @@ public class Player {
     private final EventDispatcher eventDispatcher;
     private final MetaDataStore metaDataStore;
     private double volume = 1.0D;
+    private double volumeChangeStep = 0.05D;
 
     public Player(EventDispatcher eventDispatcher, MetaDataStore metaDataStore) {
         this.eventDispatcher = eventDispatcher;
@@ -74,11 +75,11 @@ public class Player {
         eventDispatcher.register(VolumeDownEvent.class, new EventDispatcher.Receiver<VolumeDownEvent>() {
             @Override
             public void receive(VolumeDownEvent event) {
-                if (volume <= 0.1){
+                if (volume <= volumeChangeStep){
                     volume = 0;
                 }
                 else{
-                    volume -= 0.1;
+                    volume -= volumeChangeStep;
                 }
                 mediaPlayer.setVolume(volume);
                 eventDispatcher.dispatch(new VolumeChangedEvent(volume));
@@ -88,11 +89,11 @@ public class Player {
         eventDispatcher.register(VolumeUpEvent.class, new EventDispatcher.Receiver<VolumeUpEvent>() {
             @Override
             public void receive(VolumeUpEvent event) {
-                if (volume >= 0.9){
+                if (volume >= 1-volumeChangeStep){
                     volume = 1;
                 }
                 else{
-                    volume += 0.1;
+                    volume += volumeChangeStep;
                 }
                 mediaPlayer.setVolume(volume);
                 eventDispatcher.dispatch(new VolumeChangedEvent(volume));

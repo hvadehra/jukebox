@@ -121,8 +121,8 @@ public class Display {
         eventDispatcher.register(PlayTimeChangedEvent.class, new EventDispatcher.Receiver<PlayTimeChangedEvent>() {
             @Override
             public void receive(PlayTimeChangedEvent event) {
-                String done = StringUtils.repeat("\u2550", (int) ((event.newValue / event.duration) * (PROGRESS_WIDTH - 11)));
-                String remaining = StringUtils.repeat("\u2015", PROGRESS_WIDTH - done.length() - 11);
+                String done = StringUtils.repeat("\u25AC", (int) ((event.newValue / event.duration) * (PROGRESS_WIDTH - 11)));
+                String remaining = StringUtils.repeat("\u25A0", PROGRESS_WIDTH - done.length() - 11);
                 setDefaultEntryColors();
                 clearLine(PROGRESS_BAR_YPOS);
                 screenWriter.drawString(1, PROGRESS_BAR_YPOS, "[" + done + "[" + formatTime(event.newValue) + "]" + remaining + "]");
