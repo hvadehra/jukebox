@@ -23,13 +23,14 @@ import java.util.Random;
  */
 public class Player {
 
+    private static double VOLUME_CHANGE_STEP = 0.05D;
+
     private final List<File> nowPlaying;
     private File currentPlaying;
     private MediaPlayer mediaPlayer;
     private final EventDispatcher eventDispatcher;
     private final MetaDataStore metaDataStore;
     private double volume = 1.0D;
-    private double volumeChangeStep = 0.05D;
 
     public Player(EventDispatcher eventDispatcher, MetaDataStore metaDataStore) {
         this.eventDispatcher = eventDispatcher;
@@ -75,11 +76,11 @@ public class Player {
         eventDispatcher.register(VolumeDownEvent.class, new EventDispatcher.Receiver<VolumeDownEvent>() {
             @Override
             public void receive(VolumeDownEvent event) {
-                if (volume <= volumeChangeStep){
+                if (volume <= VOLUME_CHANGE_STEP){
                     volume = 0;
                 }
                 else{
-                    volume -= volumeChangeStep;
+                    volume -= VOLUME_CHANGE_STEP;
                 }
                 mediaPlayer.setVolume(volume);
                 eventDispatcher.dispatch(new VolumeChangedEvent(volume));
@@ -89,11 +90,11 @@ public class Player {
         eventDispatcher.register(VolumeUpEvent.class, new EventDispatcher.Receiver<VolumeUpEvent>() {
             @Override
             public void receive(VolumeUpEvent event) {
-                if (volume >= 1-volumeChangeStep){
+                if (volume >= 1- VOLUME_CHANGE_STEP){
                     volume = 1;
                 }
                 else{
-                    volume += volumeChangeStep;
+                    volume += VOLUME_CHANGE_STEP;
                 }
                 mediaPlayer.setVolume(volume);
                 eventDispatcher.dispatch(new VolumeChangedEvent(volume));
