@@ -4,8 +4,9 @@ import org.melocine.events.EventDispatcher;
 import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.ScrobbleSuccessEvent;
 
-import java.io.*;
-import java.net.URL;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,12 +15,14 @@ import java.net.URL;
  * Time: 3:56 AM
  * To change this template use File | Settings | File Templates.
  */
-public class URLReader {
+public class LyricsService {
 
     private final EventDispatcher eventDispatcher;
+    private final URLReader urlReader;
 
-    public URLReader(EventDispatcher eventDispatcher){
+    public LyricsService(EventDispatcher eventDispatcher, URLReader urlReader){
         this.eventDispatcher = eventDispatcher;
+        this.urlReader = urlReader;
         registerForEvents();
     }
 
@@ -29,7 +32,7 @@ public class URLReader {
             public void receive(ScrobbleSuccessEvent event) {
                 String url = "http://www.last.fm/user/" + event.user + "/now";
                 String outfile = "nowplaying.lastfm";
-                String lastfm = getUrl(url);
+                String lastfm = urlReader.getUrl(url);
                 writeToFile(lastfm, outfile);
             }
         });
@@ -47,7 +50,7 @@ public class URLReader {
 
     private String getFromAZLyrics(String artist, String title) {
         String url = "http://www.azlyrics.com/lyrics/" + sanitizeForAZ(artist) + "/" + sanitizeForAZ(title) + ".html";
-        String lyricsPage = getUrl(url);
+        String lyricsPage = urlReader.getUrl(url);
         int start = lyricsPage.indexOf("<!-- start of lyrics -->");
         int end = lyricsPage.indexOf("<!-- end of lyrics -->");
         return (start < 0 || end < 0) ? "" : lyricsPage.substring(start, end);
@@ -55,7 +58,7 @@ public class URLReader {
 
     private String getFromLyricsMania(String artist, String title) {
         String url = "http://www.lyricsmania.com/" + sanitizeForLM(title) + "_lyrics_" + sanitizeForLM(artist) + ".html";
-        String lyricsPage = getUrl(url);
+        String lyricsPage = urlReader.getUrl(url);
         if (lyricsPage.isEmpty()) return "";
         int start = lyricsPage.indexOf("/* LyricsMania.com - Above Lyrics */");
         if (start < 0) return "";
@@ -63,7 +66,7 @@ public class URLReader {
         start = lyricsPage.indexOf("</strong>", start);
         start = lyricsPage.indexOf(">", start) + 1;
         int end = lyricsPage.indexOf("</div>");
-        return (start < 0 || end < 0) ? "" : lyricsPage.substring(start, end);
+        return (start < 0 || end < 0 || start > lyricsPage.length() || end > lyricsPage.length()) ? "" : lyricsPage.substring(start, end);
     }
 
     private void writeToFile(String data, String outfile) {
@@ -88,24 +91,4 @@ public class URLReader {
         return str.toLowerCase().replace(" ", "_").replaceAll("[^a-z_]", "");
     }
 
-    public String getUrl(String url){
-        System.err.println("Fetching from: " + url);
-        String output = "";
-        try{
-            URL oracle = new URL(url);
-            BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null){
-                output = output + inputLine;
-            }
-            in.close();
-        }
-        catch(Exception e){
-            System.err.println("Could not get url: " + e.getMessage());
-        }
-        return output;
-    }
-
-    public static void main(String[] args) throws Exception {
-    }
 }

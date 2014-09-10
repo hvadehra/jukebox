@@ -43,7 +43,7 @@ public class App extends Application {
         new Player(eventDispatcher, metaDataStore);
         new KeyListener(eventDispatcher);
         new Display(eventDispatcher, metaDataStore, width, height);
-        new URLReader(eventDispatcher);
+        new LyricsService(eventDispatcher, new URLReader());
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
     }

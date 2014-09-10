@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="30">
+
+    <title></title>
+</head>
+
+<body>
+
+<img src="$TRACK_INFO_IMAGE_URL"/>
+<h1>$TRACK_INFO_ARTIST</h1>
+<h2>$TRACK_INFO_TITLE</h2>
+<h3>$TRACK_INFO_ALBUM</h3>
+
+<hr/>
+
+<div>$TRACK_INFO_LYRICS</div>
+
+</body></html>
