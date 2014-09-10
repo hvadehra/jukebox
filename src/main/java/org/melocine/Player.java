@@ -132,6 +132,7 @@ public class Player {
     }
 
     private void playSelectedTrack(int currentSelectedIndex) {
+        scrobble();
         currentPlaying = nowPlaying.get(currentSelectedIndex);
         disposeMediaPlayer();
         play();
@@ -192,15 +193,20 @@ public class Player {
     }
 
     public void next() {
-        if (mediaPlayer.getCurrentTime().toSeconds() >= 30 || mediaPlayer.getCurrentTime().toSeconds() >= mediaPlayer.getMedia().getDuration().toSeconds()/2){
-            eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
-        }
+        scrobble();
         currentPlaying = nowPlaying.get(nowPlaying.indexOf(currentPlaying) + 1);
         disposeMediaPlayer();
         play();
     }
 
+    private void scrobble() {
+        if (mediaPlayer.getCurrentTime().toSeconds() >= 30 || mediaPlayer.getCurrentTime().toSeconds() >= mediaPlayer.getMedia().getDuration().toSeconds()/2){
+            eventDispatcher.dispatch(new ScrobbleTrackEvent(metaDataStore.get(currentPlaying.getAbsolutePath())));
+        }
+    }
+
     public void previous() {
+        scrobble();
         if (mediaPlayer.currentTimeProperty().getValue().toSeconds() > 10){
             mediaPlayer.seek(new Duration(0));
             return;
