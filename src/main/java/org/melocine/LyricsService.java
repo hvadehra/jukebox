@@ -124,12 +124,12 @@ public class LyricsService {
 
     private String sanitizeForAZ(String str) {
         if (str.isEmpty()) return str;
-        return str.toLowerCase().replaceAll("[^a-z]", "").replace("the", "");
+        return str.toLowerCase().replaceAll("[^a-z0-9]", "").replace("the", "");
     }
 
     private String sanitizeForLM(String str) {
         if (str.isEmpty()) return str;
-        return str.toLowerCase().replace(" ", "_").replaceAll("[^a-z_]", "");
+        return str.toLowerCase().replace(" ", "_").replaceAll("[^a-z0-9_]", "");
     }
 
 }
