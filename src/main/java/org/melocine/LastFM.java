@@ -29,6 +29,7 @@ public class LastFM {
     private final String secret;
     private final ExecutorService threadPool;
     private final EventDispatcher eventDispatcher;
+    private Session session;
 
     public LastFM(EventDispatcher eventDispatcher, String secret, String key, String password, String user) {
         this.eventDispatcher = eventDispatcher;
@@ -38,6 +39,7 @@ public class LastFM {
         this.password = password;
         this.user = user;
         this.threadPool = Executors.newFixedThreadPool(5);
+        this.session = Authenticator.getMobileSession(user, password, key, secret);
         registerEvents();
     }
 
@@ -60,7 +62,6 @@ public class LastFM {
         threadPool.submit(new Runnable() {
             @Override
             public void run() {
-                Session session = Authenticator.getMobileSession(user, password, key, secret);
                 System.err.println("Setting last.fm now playing for: " + metaData.artist + " - " + metaData.title + " - " + metaData.duration.intValue());
                 Integer timestamp = (int) (System.currentTimeMillis() / 1000);
                 ScrobbleData scrobbleData = new ScrobbleData(
@@ -78,6 +79,9 @@ public class LastFM {
                 if (result.isSuccessful()){
                     eventDispatcher.dispatch(new ScrobbleSuccessEvent(user));
                 }
+                else{
+                    session = Authenticator.getMobileSession(user, password, key, secret);
+                }
             }
         });
     }
@@ -87,10 +91,11 @@ public class LastFM {
             @Override
             public void run() {
                 System.err.println("Scrobbling to last.fm: " + metaData.artist + " - " + metaData.title + " - " + metaData.duration);
-                Session session = Authenticator.getMobileSession(user, password, key, secret);
                 int now = (int) (System.currentTimeMillis() / 1000);
                 ScrobbleResult result = Track.scrobble(metaData.artist, metaData.title, now, session);
                 System.err.println("Scrobble was successful: " + (result.isSuccessful() && !result.isIgnored()));
+                if (!result.isSuccessful())
+                    session = Authenticator.getMobileSession(user, password, key, secret);
             }
         });
     }

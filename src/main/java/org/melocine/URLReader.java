@@ -36,13 +36,34 @@ public class URLReader {
         eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
             @Override
             public void receive(NowPlayingEvent event) {
-                String artist = sanitize(event.metaData.artist);
-                String title = sanitize(event.metaData.title);
-                String url = "http://www.azlyrics.com/lyrics/" + artist + "/" + title + ".html";
-                String lyrics = getUrl(url);
-                processLyrics(lyrics);
+                String outfile = "nowplaying.lyrics";
+                String lyrics = getFromAZLyrics(event.metaData.artist, event.metaData.title);
+                if (lyrics.isEmpty())
+                    lyrics = getFromLyricsMania(event.metaData.artist, event.metaData.title);
+                writeToFile(lyrics, outfile);
             }
         });
+    }
+
+    private String getFromAZLyrics(String artist, String title) {
+        String url = "http://www.azlyrics.com/lyrics/" + sanitizeForAZ(artist) + "/" + sanitizeForAZ(title) + ".html";
+        String lyricsPage = getUrl(url);
+        int start = lyricsPage.indexOf("<!-- start of lyrics -->");
+        int end = lyricsPage.indexOf("<!-- end of lyrics -->");
+        return (start < 0 || end < 0) ? "" : lyricsPage.substring(start, end);
+    }
+
+    private String getFromLyricsMania(String artist, String title) {
+        String url = "http://www.lyricsmania.com/" + sanitizeForLM(title) + "_lyrics_" + sanitizeForLM(artist) + ".html";
+        String lyricsPage = getUrl(url);
+        if (lyricsPage.isEmpty()) return "";
+        int start = lyricsPage.indexOf("/* LyricsMania.com - Above Lyrics */");
+        if (start < 0) return "";
+        start = lyricsPage.indexOf("<div class=\"lyrics-body\"", start);
+        start = lyricsPage.indexOf("</strong>", start);
+        start = lyricsPage.indexOf(">", start) + 1;
+        int end = lyricsPage.indexOf("</div>");
+        return (start < 0 || end < 0) ? "" : lyricsPage.substring(start, end);
     }
 
     private void writeToFile(String data, String outfile) {
@@ -57,17 +78,14 @@ public class URLReader {
 
     }
 
-    private void processLyrics(String lyricsPage) {
-        String outfile = "nowplaying.lyrics";
-        int start = lyricsPage.indexOf("<!-- start of lyrics -->");
-        int end = lyricsPage.indexOf("<!-- end of lyrics -->");
-        String lyrics = (start < 0 || end < 0) ? "" : lyricsPage.substring(start, end);
-        writeToFile(lyrics, outfile);
-    }
-
-    private String sanitize(String str) {
+    private String sanitizeForAZ(String str) {
         if (str.isEmpty()) return str;
         return str.toLowerCase().replaceAll("[^a-z]", "").replace("the", "");
+    }
+
+    private String sanitizeForLM(String str) {
+        if (str.isEmpty()) return str;
+        return str.toLowerCase().replace(" ", "_").replaceAll("[^a-z_]", "");
     }
 
     public String getUrl(String url){

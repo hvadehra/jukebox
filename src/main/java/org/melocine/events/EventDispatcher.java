@@ -1,6 +1,7 @@
 package org.melocine.events;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.MapMaker;
 
 import java.util.Map;
@@ -36,7 +37,7 @@ public class EventDispatcher {
             try {
                 receiver.receive(event);
             } catch (Exception e) {
-                System.err.println("Error During event dispatch: " + e);
+                System.err.println("Error During event dispatch: " + e + "\n" + Joiner.on("\n").join(e.getStackTrace()));
             }
         }
     }
