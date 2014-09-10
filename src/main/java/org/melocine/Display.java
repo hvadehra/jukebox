@@ -31,7 +31,7 @@ public class Display {
     private static final int PLAYLIST_YPOS = 5;
     private static final int PROGRESS_BAR_YPOS = 1;
     private static final int NOW_PLAYING_YPOS = 2;
-    private static int PLAYLIST_INDEX_WIDTH = 4;
+    private static int PLAYLIST_INDEX_WIDTH = 5;
     private static int PLAYLIST_TITLE_WIDTH = 40;
     private static int PLAYLIST_ARTIST_WIDTH = 35;
     private static int PLAYLIST_ALBUM_WIDTH = 55;
@@ -248,7 +248,6 @@ public class Display {
             int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
             File entry = playlist.get(i);
             MetaData metaData = metaDataStore.get(entry.getAbsolutePath());
-            String entryDisplay = createEntryDisplay(i, metaData);
             ScreenCharacterStyle[] charStyle = setDefaultEntryColors();
             if (currentSelectedIndex == i){
                 charStyle = setCurrentSelectedEntryColors();
@@ -257,29 +256,32 @@ public class Display {
                 charStyle = setCurrentPlayingEntryColors();
             }
             clearLine(displayPos);
+            String entryDisplay = createEntryDisplay(i, metaData, i == currentPlayingIndex);
             screenWriter.drawString(1, displayPos, entryDisplay, charStyle);
         }
     }
 
-    private void clearLine(int y) {
-        screenWriter.drawString(0, y, StringUtils.repeat(" ", TERMINAL_WIDTH));
-    }
-
-    private String createEntryDisplay(int index, MetaData metaData) {
+    private String createEntryDisplay(int index, MetaData metaData, boolean currentPlaying) {
+        String currentMarker = currentPlaying ? "\u25B8" : "";
         String format =
-                "%" + PLAYLIST_INDEX_WIDTH + "d  " +
+                "%" + PLAYLIST_INDEX_WIDTH + "s  " +
                 "%-" + PLAYLIST_TITLE_WIDTH + "s " +
                 "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
                 "%-" + PLAYLIST_ALBUM_WIDTH + "s " +
                 "%-" + PLAYLIST_RATING_WIDTH + "s";
         return String.format(
                 format,
-                index+1,
+                currentMarker + " " + (index+1),
                 truncate(metaData.title, PLAYLIST_TITLE_WIDTH),
                 truncate(metaData.artist, PLAYLIST_ARTIST_WIDTH),
                 truncate(metaData.album, PLAYLIST_ALBUM_WIDTH),
                 getRatingAsString(metaData.rating)
         );
+        
+    }
+
+    private void clearLine(int y) {
+        screenWriter.drawString(0, y, StringUtils.repeat(" ", TERMINAL_WIDTH));
     }
 
     private String truncate(String string, int maxWidth) {
