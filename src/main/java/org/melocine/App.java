@@ -1,6 +1,7 @@
 package org.melocine;
 
 import com.google.common.base.Joiner;
+import de.umass.lastfm.Caller;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.commons.io.FileUtils;
@@ -37,13 +38,16 @@ public class App extends Application {
         System.err.println("Found " + files.size() + " tracks.");
         Properties properties = new PropertiesService().properties();
 
+        Caller.getInstance().setUserAgent("melocine-jukebox");
+        Caller.getInstance().setDebugMode(true);
+
         EventDispatcher eventDispatcher = new EventDispatcher();
         MetaDataStore metaDataStore = new MetaDataStore(eventDispatcher);
-        new LastFM(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
+        LastFMService lastFMService = new LastFMService(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
         new Player(eventDispatcher, metaDataStore);
         new KeyListener(eventDispatcher);
         new Display(eventDispatcher, metaDataStore, width, height);
-        new LyricsService(eventDispatcher, new URLReader());
+        new LyricsService(eventDispatcher, new URLReader(), lastFMService);
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
     }

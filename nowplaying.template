@@ -1,20 +1,20 @@
 <!doctype html>
 <html>
 <head>
-    <meta http-equiv="refresh" content="30">
-
+    <meta http-equiv="refresh" content="10">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine">
     <title></title>
 </head>
 
-<body>
+<body style="text-align:center;font-family: 'Open Sans', serif;" text="white" bgcolor="black">
 
-<img src="$TRACK_INFO_IMAGE_URL"/>
-<h1>$TRACK_INFO_ARTIST</h1>
-<h2>$TRACK_INFO_TITLE</h2>
-<h3>$TRACK_INFO_ALBUM</h3>
+<img src="TRACK_INFO_IMAGE_URL"/>
+<h1>TRACK_INFO_ARTIST</h1>
+<h2>TRACK_INFO_TITLE</h2>
+<h3>TRACK_INFO_ALBUM</h3>
 
 <hr/>
 
-<div>$TRACK_INFO_LYRICS</div>
+<div>TRACK_INFO_LYRICS_HTML</div>
 
 </body></html>
