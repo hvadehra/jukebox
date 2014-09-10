@@ -41,21 +41,21 @@ public class LyricsService {
             public void receive(ScrobbleNowPlayingSuccessEvent event) {
                 Track info = lastFMService.getTrackInfo(event.artist, event.track);
                 System.err.println("track info: " + info.toString());
-                String artist = info.getArtist();
-                String track = info.getName();
-                String album = info.getAlbum();
+                String artist = info.getArtist() == null ? event.artist : info.getArtist();
+                String track = info.getName() == null ? event.track : info.getName();
+                String album = info.getAlbum() == null ? "" : info.getAlbum();
                 System.err.println("img sizes: " + info.availableSizes());
-                ImageSize imageSize = info.availableSizes().iterator().next();
-                String imgUrl = info.getImageURL(imageSize);
+                ImageSize imageSize = info.availableSizes().isEmpty() ? null : info.availableSizes().iterator().next();
                 if (info.availableSizes().contains(ImageSize.LARGE))
                     imageSize = ImageSize.LARGE;
                 if (info.availableSizes().contains(ImageSize.EXTRALARGE))
                     imageSize = ImageSize.EXTRALARGE;
+                String imgUrl = imageSize == null ? "" : info.getImageURL(imageSize);
                 try {
                     Charset charset = StandardCharsets.UTF_8;
                     Path template = Paths.get("nowplaying.template");
                     String content = new String(Files.readAllBytes(template), charset);
-                    System.err.println("Setting img to: " + info.getImageURL(imageSize) + ", size=" + imageSize.name());
+                    System.err.println("Setting img to: " + imgUrl + ", size=" + imageSize);
                     content = content.replaceAll("TRACK_INFO_IMAGE_URL", imgUrl);
                     content = content.replaceAll("TRACK_INFO_ARTIST", artist);
                     content = content.replaceAll("TRACK_INFO_TITLE", track);
