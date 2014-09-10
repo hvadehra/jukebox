@@ -8,6 +8,7 @@ import de.umass.lastfm.scrobble.ScrobbleData;
 import de.umass.lastfm.scrobble.ScrobbleResult;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.NowPlayingEvent;
+import org.melocine.events.ScrobbleSuccessEvent;
 import org.melocine.events.ScrobbleTrackEvent;
 
 import java.util.concurrent.ExecutorService;
@@ -74,6 +75,9 @@ public class LastFM {
                         "");
                 ScrobbleResult result = Track.updateNowPlaying(scrobbleData, session);
                 System.err.println("last.fm was successful: " + result.isSuccessful());
+                if (result.isSuccessful()){
+                    eventDispatcher.dispatch(new ScrobbleSuccessEvent(user));
+                }
             }
         });
     }
