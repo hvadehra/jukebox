@@ -6,8 +6,6 @@ import de.umass.lastfm.Track;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.ScrobbleNowPlayingSuccessEvent;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -72,14 +70,6 @@ public class LyricsService {
                 }
             }
         });
-//        eventDispatcher.register(NowPlayingEvent.class, new EventDispatcher.Receiver<NowPlayingEvent>() {
-//            @Override
-//            public void receive(NowPlayingEvent event) {
-//                String outfile = "nowplaying.lyrics";
-//                String lyrics = getLyrics(event);
-//                writeToFile(lyrics, outfile);
-//            }
-//        });
     }
 
     private String getLyrics(String artist, String title) {
@@ -108,18 +98,6 @@ public class LyricsService {
         start = lyricsPage.indexOf(">", start) + 1;
         int end = lyricsPage.indexOf("</div>", start);
         return (start < 0 || end < 0 || start > lyricsPage.length() || end > lyricsPage.length()) ? "" : lyricsPage.substring(start, end);
-    }
-
-    private void writeToFile(String data, String outfile) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outfile));
-            writer.write(data);
-            writer.close();
-            System.err.println("Wrote " + data.getBytes().length + " bytes to: " + outfile);
-        } catch (IOException e) {
-            System.err.println("Could not write data to: " + outfile + " : " + e.getMessage());
-        }
-
     }
 
     private String sanitizeForAZ(String str) {
