@@ -152,7 +152,7 @@ public class Player {
             public void run() {
                 Duration duration = mediaPlayer.getMedia().getDuration();
                 MetaData metaData = metaDataStore.get(currentPlaying.getAbsolutePath());
-                eventDispatcher.dispatch(new NowPlayingEvent(nowPlaying.indexOf(currentPlaying), metaData, duration, nowPlaying));
+                eventDispatcher.dispatch(new NowPlayingEvent(currentPlaying, metaData, duration, nowPlaying));
             }
         });
         mediaPlayer.currentTimeProperty().addListener(new ChangeListener<Duration>() {

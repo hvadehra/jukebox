@@ -14,13 +14,13 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class NowPlayingEvent implements EventDispatcher.Event {
-    public final int index;
+    public final File current;
     public final MetaData metaData;
     public final Duration duration;
     public final List<File> playlist;
 
-    public NowPlayingEvent(int index, MetaData metaData, Duration duration, List<File> playlist) {
-        this.index = index;
+    public NowPlayingEvent(File current, MetaData metaData, Duration duration, List<File> playlist) {
+        this.current = current;
         this.metaData = metaData;
         this.duration = duration;
         this.playlist = playlist;

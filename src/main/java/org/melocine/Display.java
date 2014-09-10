@@ -42,7 +42,7 @@ public class Display {
     private final MetaDataStore metaDataStore;
     private final Screen screen;
     private final ScreenWriter screenWriter;
-    private int currentPlayingIndex;
+    private File currentPlaying;
     private List<File> playlist;
     private int currentSelectedIndex = 0;
     private int displayBeginIndex = 0;
@@ -102,7 +102,8 @@ public class Display {
             @Override
             public void receive(NowPlayingEvent event) {
                 playlist = event.playlist;
-                currentPlayingIndex = event.index;
+                currentPlaying = event.current;
+                int currentPlayingIndex = playlist.indexOf(currentPlaying);
                 if (displayBeginIndex < currentPlayingIndex && currentPlayingIndex < displayEndIndex) {
                     displayBeginIndex = (displayEndIndex - currentPlayingIndex) < 5 && displayEndIndex < playlist.size() ? displayBeginIndex + 1 : displayBeginIndex;
                     displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
@@ -201,6 +202,7 @@ public class Display {
     }
 
     private void drawNowPlaying() {
+        int currentPlayingIndex = playlist.indexOf(currentPlaying);
         MetaData metaData = metaDataStore.get(playlist.get(currentPlayingIndex).getAbsolutePath());
         drawNowPlayingTrackInfo(metaData);
         drawNowPlayingRating(metaData);
@@ -240,6 +242,7 @@ public class Display {
     }
 
     private void drawPlaylist(){
+        int currentPlayingIndex = playlist.indexOf(currentPlaying);
         displayEndIndex = (displayEndIndex < playlist.size()) ? displayEndIndex : playlist.size();
         for (int i = displayBeginIndex; i < displayEndIndex; i++) {
             int displayPos = PLAYLIST_YPOS + i - displayBeginIndex;
