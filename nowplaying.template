@@ -6,11 +6,11 @@
     <title></title>
 </head>
 
-<body style="text-align:center;font-family: 'Open Sans', serif;" text="white" bgcolor="black">
+<body style="text-align:center;font-family: 'Open Sans', serif;" text="white" bgcolor="#222222">
 
 <img src="TRACK_INFO_IMAGE_URL"/>
-<h1>TRACK_INFO_ARTIST</h1>
-<h2>TRACK_INFO_TITLE</h2>
+<h1>TRACK_INFO_TITLE</h1>
+<h2>TRACK_INFO_ARTIST</h2>
 <h3>TRACK_INFO_ALBUM</h3>
 
 <hr/>

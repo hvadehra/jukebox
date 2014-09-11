@@ -31,7 +31,7 @@ public class Display {
     private static final int PLAYLIST_YPOS = 5;
     private static final int PROGRESS_BAR_YPOS = 1;
     private static final int NOW_PLAYING_YPOS = 2;
-    private static int PLAYLIST_INDEX_WIDTH = 5;
+    private static int PLAYLIST_INDEX_WIDTH = 6;
     private static int PLAYLIST_TITLE_WIDTH = 40;
     private static int PLAYLIST_ARTIST_WIDTH = 35;
     private static int PLAYLIST_ALBUM_WIDTH = 55;
