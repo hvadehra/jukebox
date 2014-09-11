@@ -30,7 +30,7 @@ public class Player {
     private MediaPlayer mediaPlayer;
     private final EventDispatcher eventDispatcher;
     private final MetaDataStore metaDataStore;
-    private double volume = 1.0D;
+    private double volume = 0.5D;
 
     public Player(EventDispatcher eventDispatcher, MetaDataStore metaDataStore) {
         this.eventDispatcher = eventDispatcher;

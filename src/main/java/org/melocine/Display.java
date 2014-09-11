@@ -28,10 +28,12 @@ public class Display {
     private static int TERMINAL_HEIGHT = 70;
     private static int PROGRESS_WIDTH = TERMINAL_WIDTH;
     public static int PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - 10;
+    private static final int VOLUME_YPOS = 2;
     private static final int PLAYLIST_YPOS = 5;
     private static final int PROGRESS_BAR_YPOS = 1;
     private static final int NOW_PLAYING_YPOS = 2;
-    private static int PLAYLIST_INDEX_WIDTH = 6;
+    private static final int PLAYLIST_CURRENT_MARKER_WIDTH = 2;
+    private static int PLAYLIST_INDEX_WIDTH = 4;
     private static int PLAYLIST_TITLE_WIDTH = 40;
     private static int PLAYLIST_ARTIST_WIDTH = 35;
     private static int PLAYLIST_ALBUM_WIDTH = 55;
@@ -47,7 +49,7 @@ public class Display {
     private int currentSelectedIndex = 0;
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
-    private int volume = MAX_VOLUME_SIZE;
+    private int volume = MAX_VOLUME_SIZE/2;
 
     public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
@@ -63,6 +65,8 @@ public class Display {
         }).start();
         this.screenWriter = new ScreenWriter(screen);
         clearScreen();
+        drawVolumeIcon();
+        screen.setCursorPosition(1, height-1);
         onTerminalResize(new TerminalSize(width, height));
         registerForEvents();
     }
@@ -90,9 +94,9 @@ public class Display {
         PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - 8;
         PLAYLIST_INDEX_WIDTH = 4;
         PLAYLIST_RATING_WIDTH = 10;
-        PLAYLIST_TITLE_WIDTH = (TERMINAL_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 3;
-        PLAYLIST_ARTIST_WIDTH = (TERMINAL_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 4;
-        PLAYLIST_ALBUM_WIDTH = (TERMINAL_WIDTH - PLAYLIST_ARTIST_WIDTH - PLAYLIST_TITLE_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 8);
+        PLAYLIST_TITLE_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 3;
+        PLAYLIST_ARTIST_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 4;
+        PLAYLIST_ALBUM_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_ARTIST_WIDTH - PLAYLIST_TITLE_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 8);
         displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
         screen.refresh();
     }
@@ -197,8 +201,13 @@ public class Display {
 
     private void drawVolume() {
         setDefaultEntryColors();
-        String volumeSlider = StringUtils.repeat("\u25CF", volume) + "\u2B24" + StringUtils.repeat("\u25CB",MAX_VOLUME_SIZE-volume);
-        screenWriter.drawString(1, NOW_PLAYING_YPOS, volumeSlider);
+        String volumeSlider = StringUtils.repeat("\u25CF", volume).concat("\u2B24").concat(StringUtils.repeat("\u25CB", MAX_VOLUME_SIZE - volume));
+        screenWriter.drawString(3, VOLUME_YPOS, volumeSlider + " " + Integer.parseInt(String.valueOf(Math.round(100 * volume / MAX_VOLUME_SIZE))) + " %");
+    }
+
+    private void drawVolumeIcon() {
+        String volumeIcon = StringUtils.repeat("\n", VOLUME_YPOS).concat("\uD83D\uDD0A");
+        System.out.print(volumeIcon);
     }
 
     private void drawNowPlaying() {
@@ -210,7 +219,7 @@ public class Display {
 
     private void drawNowPlayingTrackInfo(MetaData metaData) {
         setNowPlayingColors();
-        clearLine(NOW_PLAYING_YPOS);
+        clearLineAfter(MAX_VOLUME_SIZE+10, NOW_PLAYING_YPOS);
         String trackInfo = metaData.artist + " - " + metaData.title + " [" + metaData.album + "]" + " (" + formatTime(metaData.duration) + ")";
         screenWriter.drawString(1, NOW_PLAYING_YPOS, alignCentre(trackInfo, TERMINAL_WIDTH));
     }
@@ -262,8 +271,9 @@ public class Display {
     }
 
     private String createEntryDisplay(int index, MetaData metaData, boolean currentPlaying) {
-        String currentMarker = currentPlaying ? "\u25B8" : "";
+        String currentMarker = currentPlaying ? "\u25B6" : "";
         String format =
+                "%-" + PLAYLIST_CURRENT_MARKER_WIDTH + "s" +
                 "%" + PLAYLIST_INDEX_WIDTH + "s  " +
                 "%-" + PLAYLIST_TITLE_WIDTH + "s " +
                 "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
@@ -271,7 +281,8 @@ public class Display {
                 "%-" + PLAYLIST_RATING_WIDTH + "s";
         return String.format(
                 format,
-                currentMarker + " " + (index+1),
+                currentMarker,
+                index+1,
                 truncate(metaData.title, PLAYLIST_TITLE_WIDTH),
                 truncate(metaData.artist, PLAYLIST_ARTIST_WIDTH),
                 truncate(metaData.album, PLAYLIST_ALBUM_WIDTH),
@@ -282,6 +293,10 @@ public class Display {
 
     private void clearLine(int y) {
         screenWriter.drawString(0, y, StringUtils.repeat(" ", TERMINAL_WIDTH));
+    }
+
+    private void clearLineAfter(int x, int y) {
+        screenWriter.drawString(x, y, StringUtils.repeat(" ", TERMINAL_WIDTH));
     }
 
     private String truncate(String string, int maxWidth) {

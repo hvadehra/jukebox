@@ -55,11 +55,11 @@ public class App extends Application {
     private List<File> buildPlayList(Collection<File> files) {
         List<File> playList = new ArrayList<File>();
         playList.addAll(files);
-//        for (int i = 0; i < playList.size(); i++) {
-//            int random = i + new Random().nextInt(playList.size()-i);
-//            File element = playList.remove(random);
-//            playList.add(i, element);
-//        }
+        for (int i = 0; i < playList.size(); i++) {
+            int random = i + new Random().nextInt(playList.size()-i);
+            File element = playList.remove(random);
+            playList.add(i, element);
+        }
         return playList;
     }
 
