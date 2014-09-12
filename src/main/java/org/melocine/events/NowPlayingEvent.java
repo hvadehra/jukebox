@@ -1,7 +1,7 @@
 package org.melocine.events;
 
 import javafx.util.Duration;
-import org.melocine.MetaData;
+import org.melocine.types.MetaData;
 
 import java.io.File;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.melocine;
+package org.melocine.types;
 
 import javafx.collections.ObservableMap;
 

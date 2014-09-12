@@ -1,6 +1,6 @@
 package org.melocine.events;
 
-import org.melocine.MetaData;
+import org.melocine.types.MetaData;
 
 /**
  * Created by IntelliJ IDEA.

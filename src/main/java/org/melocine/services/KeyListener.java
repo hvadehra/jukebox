@@ -1,6 +1,6 @@
 package org.melocine.services;
 
-import org.melocine.Display;
+import org.melocine.components.Display;
 import org.melocine.events.*;
 
 import java.io.IOException;
