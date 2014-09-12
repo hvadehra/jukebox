@@ -32,7 +32,7 @@ public class Display {
     private static final int PLAYLIST_YPOS = 5;
     private static final int PROGRESS_BAR_YPOS = 1;
     private static final int NOW_PLAYING_YPOS = 2;
-    private static final int PLAYLIST_CURRENT_MARKER_WIDTH = 1;
+    private static final int PLAYLIST_CURRENT_MARKER_WIDTH = 2;
     private static int PLAYLIST_INDEX_WIDTH = 5;
     private static int PLAYLIST_TITLE_WIDTH = 40;
     private static int PLAYLIST_ARTIST_WIDTH = 35;
@@ -91,7 +91,7 @@ public class Display {
         TERMINAL_WIDTH = newSize.getColumns();
         TERMINAL_HEIGHT = newSize.getRows();
         PROGRESS_WIDTH = TERMINAL_WIDTH;
-        PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - 8;
+        PLAYLIST_DISPLAY_SIZE = TERMINAL_HEIGHT - PLAYLIST_YPOS - 2;
         PLAYLIST_INDEX_WIDTH = 4;
         PLAYLIST_RATING_WIDTH = 10;
         PLAYLIST_TITLE_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 3;
@@ -274,7 +274,7 @@ public class Display {
         String currentMarker = currentPlaying ? "\u25B6" : "";
         String format =
                 "%-" + PLAYLIST_CURRENT_MARKER_WIDTH + "s" +
-                "%" + PLAYLIST_INDEX_WIDTH + "s  " +
+                "%" + PLAYLIST_INDEX_WIDTH + "d  " +
                 "%-" + PLAYLIST_TITLE_WIDTH + "s " +
                 "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
                 "%-" + PLAYLIST_ALBUM_WIDTH + "s " +
