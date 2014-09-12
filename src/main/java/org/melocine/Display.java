@@ -9,6 +9,7 @@ import com.googlecode.lanterna.terminal.TerminalSize;
 import com.googlecode.lanterna.terminal.text.UnixTerminal;
 import org.apache.commons.lang3.StringUtils;
 import org.melocine.events.*;
+import org.melocine.services.MetaDataStore;
 
 import java.io.File;
 import java.util.List;

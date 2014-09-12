@@ -1,4 +1,4 @@
-package org.melocine;
+package org.melocine.services;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;

@@ -1,4 +1,4 @@
-package org.melocine;
+package org.melocine.services;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

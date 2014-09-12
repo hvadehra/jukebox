@@ -10,6 +10,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.PlayAllEvent;
+import org.melocine.services.*;
 
 import java.io.File;
 import java.net.MalformedURLException;

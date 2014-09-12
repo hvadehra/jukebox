@@ -1,10 +1,11 @@
-package org.melocine;
+package org.melocine.services;
 
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleData;
 import de.umass.lastfm.scrobble.ScrobbleResult;
+import org.melocine.MetaData;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.ScrobbleNowPlayingSuccessEvent;

@@ -1,4 +1,4 @@
-package org.melocine;
+package org.melocine.services;
 
 import com.google.common.base.Joiner;
 import de.umass.lastfm.ImageSize;
