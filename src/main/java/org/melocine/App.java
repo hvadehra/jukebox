@@ -47,10 +47,12 @@ public class App extends Application {
         EventDispatcher eventDispatcher = new EventDispatcher();
         MetaDataStore metaDataStore = new MetaDataStore(eventDispatcher);
         LastFMService lastFMService = new LastFMService(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
+        URLReader urlReader = new URLReader();
+        LyricsService lyricsService = new LyricsService(urlReader);
         new Player(eventDispatcher, metaDataStore);
         new KeyListener(eventDispatcher);
         new Display(eventDispatcher, metaDataStore, width, height);
-        new LyricsService(eventDispatcher, new URLReader(), lastFMService);
+        new NowPlayingService(eventDispatcher, lastFMService, lyricsService);
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
     }

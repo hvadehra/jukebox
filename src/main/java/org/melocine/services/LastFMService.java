@@ -1,15 +1,16 @@
 package org.melocine.services;
 
+import de.umass.lastfm.Artist;
 import de.umass.lastfm.Authenticator;
 import de.umass.lastfm.Session;
 import de.umass.lastfm.Track;
 import de.umass.lastfm.scrobble.ScrobbleData;
 import de.umass.lastfm.scrobble.ScrobbleResult;
-import org.melocine.types.MetaData;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.NowPlayingEvent;
 import org.melocine.events.ScrobbleNowPlayingSuccessEvent;
 import org.melocine.events.ScrobbleTrackEvent;
+import org.melocine.types.MetaData;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,5 +102,9 @@ public class LastFMService {
 
     public Track getTrackInfo(String artist, String track) {
         return Track.getInfo(artist, track, apiKey);
+    }
+
+    public Artist getArtistInfo(String artist) {
+        return Artist.getInfo(artist, apiKey);
     }
 }
