@@ -49,10 +49,11 @@ public class App extends Application {
         LastFMService lastFMService = new LastFMService(eventDispatcher, "7eb89485dc9374c4ebbe506a18ff8f8b", "2e6628b43ae789c509ecb50c1437d5d8", properties.getProperty("lastfm.password"), properties.getProperty("lastfm.username"));
         URLReader urlReader = new URLReader();
         LyricsService lyricsService = new LyricsService(urlReader);
+        ImageService imageService = new ImageService(urlReader);
         new Player(eventDispatcher, metaDataStore);
         new KeyListener(eventDispatcher);
         new Display(eventDispatcher, metaDataStore, width, height);
-        new NowPlayingService(eventDispatcher, lastFMService, lyricsService);
+        new NowPlayingService(eventDispatcher, lastFMService, lyricsService, imageService);
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
     }

@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,11 +27,16 @@ public class NowPlayingService {
     private final EventDispatcher eventDispatcher;
     private final LastFMService lastFMService;
     private final LyricsService lyricsService;
+    private final ImageService imageService;
 
-    public NowPlayingService(EventDispatcher eventDispatcher, LastFMService lastFMService, LyricsService lyricsService){
+    public NowPlayingService(EventDispatcher eventDispatcher,
+                             LastFMService lastFMService,
+                             LyricsService lyricsService,
+                             ImageService imageService){
         this.eventDispatcher = eventDispatcher;
         this.lastFMService = lastFMService;
         this.lyricsService = lyricsService;
+        this.imageService = imageService;
         registerForEvents();
     }
 
@@ -45,10 +51,15 @@ public class NowPlayingService {
                 String album = getAlbum(trackInfo);
                 String trackImageUrl = getImageUrl(trackInfo);
                 String imgUrl = "".equals(trackImageUrl) ? getImageUrl(lastFMService.getArtistInfo(artist)) : trackImageUrl;
+                List<String> artistImageUrls = getArtistImageUrls(artist);
                 String lyrics = lyricsService.getLyrics(artist, track);
-                writeToFile(artist, track, album, imgUrl, lyrics);
+                writeToFile(artist, track, album, imgUrl, lyrics, artistImageUrls);
             }
         });
+    }
+
+    private List<String> getArtistImageUrls(String artist) {
+        return imageService.getImagesForArtist(artist);
     }
 
     private String getAlbum(Track info) {
@@ -78,16 +89,17 @@ public class NowPlayingService {
         return imgUrl;
     }
 
-    private void writeToFile(String artist, String track, String album, String imgUrl, String lyrics) {
+    private void writeToFile(String artist, String track, String album, String imgUrl, String lyrics, List<String> artistImageUrls) {
         try {
             Charset charset = StandardCharsets.UTF_8;
             Path template = Paths.get("nowplaying.template");
             String content = new String(Files.readAllBytes(template), charset);
+            content = content.replaceAll("TRACK_INFO_ARTIST_IMAGES_URL_LIST", Joiner.on(",").join(artistImageUrls));
+            content = content.replaceAll("TRACK_INFO_LYRICS_HTML", lyrics);
             content = content.replaceAll("TRACK_INFO_IMAGE_URL", imgUrl);
             content = content.replaceAll("TRACK_INFO_ARTIST", artist);
             content = content.replaceAll("TRACK_INFO_TITLE", track);
             content = content.replaceAll("TRACK_INFO_ALBUM", album);
-            content = content.replaceAll("TRACK_INFO_LYRICS_HTML", lyrics);
             Path out = Paths.get("index.html");
             System.err.println("Writing to: " + out.toAbsolutePath());
             Files.write(out, content.getBytes(charset));
