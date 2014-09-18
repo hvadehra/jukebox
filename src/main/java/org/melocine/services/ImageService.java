@@ -31,19 +31,19 @@ public class ImageService {
             int end = content.indexOf("</ul", start);
             String images = content.substring(start, end);
             for (String imgTag : images.split("</li")) {
-                System.err.println("Image tag: " + imgTag);
+//                System.err.println("Image tag: " + imgTag);
                 int beginIndex = 5 + imgTag.indexOf("src=");
                 int endIndex = -2 + imgTag.indexOf("/>", beginIndex);
                 try{
                     String imgUrl = imgTag.substring(beginIndex, endIndex);
-//                    String fileType = imgUrl.substring(imgUrl.length()-4);
-//                    imgUrl = imgUrl.replace("/126s/", "/_/");
-//                    imgUrl = imgUrl.replace(fileType, "/" + sanitizeForImageUrl(artist) + fileType);
+                    String fileType = imgUrl.substring(imgUrl.length()-4);
+                    imgUrl = imgUrl.replace("/126s/", "/_/");
+                    imgUrl = imgUrl.replace(fileType, "/" + sanitizeForImageUrl(artist) + fileType);
+//                    System.err.println("Image url: " + imgUrl);
                     imageList.add(imgUrl);
-                    System.err.println("Image url: " + imgUrl);
                 }
                 catch (Exception e){
-                    System.err.println("ignoring image tag: " + imgTag);
+//                    System.err.println("ignoring image tag: " + imgTag);
                 }
             }
         }

@@ -9,7 +9,7 @@
         function showImage() {
             var images = 'TRACK_INFO_ARTIST_IMAGES_URL_LIST'.split(',');
             var currentItem = (new Date().getMinutes() % images.length);
-            document.getElementById('image').innerHTML = '<img style="height:300px;width:auto;max-width:90%;" src="' + images[currentItem] + '" />';
+            document.getElementById('image').innerHTML = '<img style="max-height:40%;width:auto;max-width:90%;" src="' + images[currentItem] + '" />';
         }
 
     </script>
