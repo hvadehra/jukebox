@@ -9,7 +9,7 @@
         function showImage() {
             var images = 'TRACK_INFO_ARTIST_IMAGES_URL_LIST'.split(',');
             var currentItem = (new Date().getMinutes() % images.length);
-            document.getElementById('image').innerHTML = '<img style="max-height:40%;width:auto;max-width:90%;" src="' + images[currentItem] + '" />';
+//            document.getElementById('image').innerHTML = '<img style="max-height:40%;width:auto;max-width:90%;" src="' + images[currentItem] + '" />';
         }
 
     </script>
@@ -23,8 +23,8 @@
         bgcolor="#222222"
         >
 
-<div id="image"></div>
-<!--<div id="image"><img src="TRACK_INFO_IMAGE_URL"/></div>-->
+<!--<div id="image"></div>-->
+<div id="image"><img src="TRACK_INFO_IMAGE_URL"/></div>
 <h1>TRACK_INFO_TITLE</h1>
 <h2>TRACK_INFO_ARTIST</h2>
 <h3>TRACK_INFO_ALBUM</h3>
