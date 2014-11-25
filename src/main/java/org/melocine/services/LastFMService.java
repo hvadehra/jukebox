@@ -39,8 +39,17 @@ public class LastFMService {
         this.password = password;
         this.user = user;
         this.threadPool = Executors.newFixedThreadPool(5);
-        this.session = Authenticator.getMobileSession(user, password, apiKey, secret);
+        createInitialSession();
         registerEvents();
+    }
+
+    private void createInitialSession() {
+        threadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+                session = Authenticator.getMobileSession(user, password, apiKey, secret);
+            }
+        });
     }
 
     private void registerEvents() {
