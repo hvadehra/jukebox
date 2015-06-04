@@ -8,8 +8,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.melocine.components.Display;
 import org.melocine.components.Player;
+import org.melocine.components.cli.Display;
+import org.melocine.components.cli.KeyListener;
 import org.melocine.events.EventDispatcher;
 import org.melocine.events.PlayAllEvent;
 import org.melocine.services.*;
@@ -54,6 +55,7 @@ public class App extends Application {
         new KeyListener(eventDispatcher);
         new Display(eventDispatcher, metaDataStore, width, height);
         new NowPlayingService(eventDispatcher, lastFMService, lyricsService, imageService);
+//        new WebComponent(8080);
         List<File> playList = buildPlayList(files);
         eventDispatcher.dispatch(new PlayAllEvent(playList));
     }

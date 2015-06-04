@@ -1,6 +1,5 @@
-package org.melocine.services;
+package org.melocine.components.cli;
 
-import org.melocine.components.Display;
 import org.melocine.events.*;
 
 import java.io.IOException;
@@ -16,21 +15,42 @@ import java.io.IOException;
 public class KeyListener{
 
     private final EventDispatcher eventDispatcher;
-
+    private Mode mode;
+    private String searchTerm;
+    private String prevSearchTerm;
     public KeyListener(final EventDispatcher eventDispatcher){
         this.eventDispatcher = eventDispatcher;
+        mode = Mode.control;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
                     try {
                         int tmp = System.in.read();
+                        if (mode.equals(Mode.search) && tmp != 10){
+                            char searchChar = (char) tmp;
+                            System.out.print(searchChar);
+                            searchTerm = searchTerm + searchChar;
+                            continue;
+                        }
                         switch (tmp){
+                            case 47:
+                                mode = Mode.search;
+                                prevSearchTerm = searchTerm;
+                                searchTerm = "";
+                                System.out.print("/");
+                                break;
                             case 3:
                                 eventDispatcher.dispatch(new ShutdownEvent());
                                 break;
                             case 10:
-                                eventDispatcher.dispatch(new ReturnKeyPressEvent());
+                                if (mode.equals(Mode.search)){
+                                    mode = Mode.control;
+                                    if (searchTerm.isEmpty()) searchTerm = prevSearchTerm;
+                                    eventDispatcher.dispatch(new SearchEvent(searchTerm));
+                                }
+                                else
+                                    eventDispatcher.dispatch(new ReturnKeyPressEvent());
                                 break;
                             case 32:
                                 eventDispatcher.dispatch(new TogglePlayPauseEvent());
@@ -81,5 +101,9 @@ public class KeyListener{
                 }
             }
         }).start();
+    }
+    
+    private static enum Mode{
+        control, search;
     }
 }

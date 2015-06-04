@@ -49,4 +49,10 @@ public class MetaData implements Serializable {
     private String getField(String key, String defaultValue){
         return (metadata.get(key) == null) ? defaultValue : metadata.get(key).toString().trim();
     }
+
+    public Boolean matches(String searchTerm) {
+        return artist.toLowerCase().startsWith(searchTerm.toLowerCase())
+            || title.toLowerCase().startsWith(searchTerm.toLowerCase())
+            || album.toLowerCase().startsWith(searchTerm.toLowerCase());
+    }
 }

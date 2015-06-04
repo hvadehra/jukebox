@@ -1,4 +1,4 @@
-package org.melocine.components;
+package org.melocine.components.cli;
 
 import com.googlecode.lanterna.TerminalFacade;
 import com.googlecode.lanterna.screen.Screen;
@@ -98,7 +98,7 @@ public class Display {
         PLAYLIST_RATING_WIDTH = 10;
         PLAYLIST_TITLE_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 3;
         PLAYLIST_ARTIST_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 2) / 4;
-        PLAYLIST_ALBUM_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_ARTIST_WIDTH - PLAYLIST_TITLE_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 8);
+        PLAYLIST_ALBUM_WIDTH = (TERMINAL_WIDTH - PLAYLIST_CURRENT_MARKER_WIDTH - PLAYLIST_ARTIST_WIDTH - PLAYLIST_TITLE_WIDTH - PLAYLIST_INDEX_WIDTH - PLAYLIST_RATING_WIDTH - 12);
         displayEndIndex = displayBeginIndex + PLAYLIST_DISPLAY_SIZE;
         screen.refresh();
     }
@@ -192,6 +192,29 @@ public class Display {
                 eventDispatcher.dispatch(new RemoveTrackAtIndexFromNowPlaying(currentSelectedIndex));
             }
         });
+
+        eventDispatcher.register(SearchEvent.class, new EventDispatcher.Receiver<SearchEvent>() {
+            @Override
+            public void receive(SearchEvent event) {
+                System.err.println("Got search event for: " + event.getSearchTerm());
+                for (int i = currentSelectedIndex+1; i< playlist.size(); i++) {
+                    File file = playlist.get(i);
+                    MetaData metaData = metaDataStore.get(file.getAbsolutePath());
+                    if (metaData.matches(event.getSearchTerm())){
+                        moveCursorTo(playlist.indexOf(file));
+                        return;
+                    }
+                }
+            }
+        });
+    }
+
+    private void moveCursorTo(int index) {
+        System.err.println("Moving cursor to position: " + index);
+        if (index > currentSelectedIndex)
+            eventDispatcher.dispatch(new CursorDownEvent(index - currentSelectedIndex));
+        else if (index < currentSelectedIndex)
+            eventDispatcher.dispatch(new CursorUpEvent(currentSelectedIndex - index));
     }
 
     private void updateScreen() {
@@ -227,7 +250,7 @@ public class Display {
     }
 
     private String alignCentre(String string, int width) {
-        if (string.length() > width) return string;
+        if (string.length() > width) return string.substring(0, width);
         int padding = width - string.length();
         return StringUtils.repeat(" ", padding/2) + string + StringUtils.repeat(" ", padding/2);
     }
@@ -276,18 +299,18 @@ public class Display {
         String currentMarker = currentPlaying ? "\u25B6" : "";
         String format =
                 "%-" + PLAYLIST_CURRENT_MARKER_WIDTH + "s" +
-                "%" + PLAYLIST_INDEX_WIDTH + "d  " +
-                "%-" + PLAYLIST_TITLE_WIDTH + "s " +
-                "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
-                "%-" + PLAYLIST_ALBUM_WIDTH + "s " +
+                "%" + PLAYLIST_INDEX_WIDTH + "d | " +
+                "%-" + PLAYLIST_TITLE_WIDTH + "s | " +
+                "%-" + PLAYLIST_ARTIST_WIDTH + "s | " +
+                "%-" + PLAYLIST_ALBUM_WIDTH + "s | " +
                 "%-" + PLAYLIST_RATING_WIDTH + "s";
         return String.format(
                 format,
                 currentMarker,
                 index+1,
-                truncate(metaData.title, PLAYLIST_TITLE_WIDTH),
-                truncate(metaData.artist, PLAYLIST_ARTIST_WIDTH),
-                truncate(metaData.album, PLAYLIST_ALBUM_WIDTH),
+                alignCentre(metaData.title, PLAYLIST_TITLE_WIDTH),
+                alignCentre(metaData.artist, PLAYLIST_ARTIST_WIDTH),
+                alignCentre(metaData.album, PLAYLIST_ALBUM_WIDTH),
                 getRatingAsString(metaData.rating)
         );
         
