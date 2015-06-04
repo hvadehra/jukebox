@@ -52,6 +52,7 @@ public class Display {
     private int displayBeginIndex = 0;
     private int displayEndIndex = PLAYLIST_DISPLAY_SIZE;
     private int volume = MAX_VOLUME_SIZE/2;
+    private String footerText = "";
 
     public Display(EventDispatcher eventDispatcher, MetaDataStore metaDataStore, int width, int height) {
         this.eventDispatcher = eventDispatcher;
@@ -193,9 +194,18 @@ public class Display {
             }
         });
 
+        eventDispatcher.register(SetFooterEvent.class, new EventDispatcher.Receiver<SetFooterEvent>() {
+            @Override
+            public void receive(SetFooterEvent event) {
+                footerText = event.getFooterText();
+                updateScreen();
+            }
+        });
+
         eventDispatcher.register(SearchEvent.class, new EventDispatcher.Receiver<SearchEvent>() {
             @Override
             public void receive(SearchEvent event) {
+                footerText = "";
                 System.err.println("Got search event for: " + event.getSearchTerm());
                 for (int i = currentSelectedIndex+1; i< playlist.size(); i++) {
                     File file = playlist.get(i);
@@ -205,6 +215,7 @@ public class Display {
                         return;
                     }
                 }
+                updateScreen();
             }
         });
     }
@@ -221,7 +232,15 @@ public class Display {
         drawNowPlaying();
         drawVolume();
         drawPlaylist();
+        drawFooter();
         screen.refresh();
+    }
+
+    private void drawFooter() {
+        int displayYPos = PLAYLIST_YPOS + displayEndIndex + 1;
+        clearLine(displayYPos);
+        screenWriter.drawString(1, displayYPos, footerText);
+        screen.setCursorPosition(footerText.length()+1, displayYPos);
     }
 
     private void drawVolume() {
@@ -299,18 +318,18 @@ public class Display {
         String currentMarker = currentPlaying ? "\u25B6" : "";
         String format =
                 "%-" + PLAYLIST_CURRENT_MARKER_WIDTH + "s" +
-                "%" + PLAYLIST_INDEX_WIDTH + "d | " +
-                "%-" + PLAYLIST_TITLE_WIDTH + "s | " +
-                "%-" + PLAYLIST_ARTIST_WIDTH + "s | " +
-                "%-" + PLAYLIST_ALBUM_WIDTH + "s | " +
+                "%" + PLAYLIST_INDEX_WIDTH + "d  " +
+                "%-" + PLAYLIST_TITLE_WIDTH + "s " +
+                "%-" + PLAYLIST_ARTIST_WIDTH + "s " +
+                "%-" + PLAYLIST_ALBUM_WIDTH + "s " +
                 "%-" + PLAYLIST_RATING_WIDTH + "s";
         return String.format(
                 format,
                 currentMarker,
                 index+1,
-                alignCentre(metaData.title, PLAYLIST_TITLE_WIDTH),
-                alignCentre(metaData.artist, PLAYLIST_ARTIST_WIDTH),
-                alignCentre(metaData.album, PLAYLIST_ALBUM_WIDTH),
+                truncate(metaData.title, PLAYLIST_TITLE_WIDTH),
+                truncate(metaData.artist, PLAYLIST_ARTIST_WIDTH),
+                truncate(metaData.album, PLAYLIST_ALBUM_WIDTH),
                 getRatingAsString(metaData.rating)
         );
         

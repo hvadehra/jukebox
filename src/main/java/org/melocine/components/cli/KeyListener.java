@@ -27,10 +27,11 @@ public class KeyListener{
                 while (true) {
                     try {
                         int tmp = System.in.read();
+                        System.err.println("Key Pressed: " + tmp);
                         if (mode.equals(Mode.search) && tmp != 10){
                             char searchChar = (char) tmp;
-                            System.out.print(searchChar);
                             searchTerm = searchTerm + searchChar;
+                            eventDispatcher.dispatch(new SetFooterEvent("Search for: " + searchTerm));
                             continue;
                         }
                         switch (tmp){
@@ -38,7 +39,7 @@ public class KeyListener{
                                 mode = Mode.search;
                                 prevSearchTerm = searchTerm;
                                 searchTerm = "";
-                                System.out.print("/");
+                                eventDispatcher.dispatch(new SetFooterEvent("Search for: "));
                                 break;
                             case 3:
                                 eventDispatcher.dispatch(new ShutdownEvent());
