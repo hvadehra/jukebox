@@ -19,7 +19,8 @@ public class URLReader {
         String output = "";
         try{
             URLConnection connection = new URL(url).openConnection();
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36");
+            connection.setRequestProperty("User-Agent", "Chrome 1.0");
+            connection.setRequestProperty("Accept", "*/*");
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
             while ((inputLine = in.readLine()) != null){

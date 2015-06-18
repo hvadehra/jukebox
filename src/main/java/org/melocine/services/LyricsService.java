@@ -16,9 +16,10 @@ public class LyricsService {
     }
 
     public String getLyrics(String artist, String title) {
-        String lyrics = getFromAZLyrics(artist, title);
-        if (lyrics.isEmpty())
+        String lyrics;
             lyrics = getFromLyricsMania(artist, title);
+        if (lyrics.isEmpty())
+            lyrics = getFromAZLyrics(artist, title);
         return lyrics;
     }
 
