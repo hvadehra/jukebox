@@ -13,23 +13,63 @@
         }
 
     </script>
+    
+    <style>
+        .background-image {
+            position: fixed;
+            left: 0;
+            right: 0;
+            z-index: 1;
+
+            display: block;
+            background: url('TRACK_INFO_IMAGE_URL') no-repeat center center fixed;
+            background-size: cover;
+            width: 100%;
+            height: 100%;
+
+            -webkit-filter: blur(10px) brightness(30%);
+        }
+
+        .content {
+            position: fixed;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        body{
+            text-align:center;
+            font-family: Inconsolata;
+        }
+
+    </style>
+
 </head>
 
 
 <body
         onload="showImage()"
-        style="text-align:center;font-family: 'Inconsolata'"
         text="white"
-        bgcolor="#222222"
         >
 
+<div class="background-image">
+
+</div>
+
 <!--<div id="image"></div>-->
-<div id="image"><img src="TRACK_INFO_IMAGE_URL"/></div>
-<h1>TRACK_INFO_TITLE</h1>
-<h2>TRACK_INFO_ARTIST</h2>
-<h3>TRACK_INFO_ALBUM</h3>
-<hr/>
+<div class="content">
+    
+    <div id="image">
+        <img src="TRACK_INFO_IMAGE_URL"/>
+    </div>
+    <h1>TRACK_INFO_TITLE</h1>
+    <h2>TRACK_INFO_ARTIST</h2>
+    <h3>TRACK_INFO_ALBUM</h3>
+    <hr/>
+    
+    <div>TRACK_INFO_LYRICS_HTML</div>
 
-<div>TRACK_INFO_LYRICS_HTML</div>
-
+</div>
 </body></html>
