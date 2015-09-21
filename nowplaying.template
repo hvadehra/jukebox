@@ -31,12 +31,11 @@
         }
 
         .content {
-            position: fixed;
-            left: 0;
+            position: absolute;
+            left: 20px;
             right: 0;
+            top: 20px;
             z-index: 9999;
-            margin-left: 20px;
-            margin-right: 20px;
         }
 
         body{
@@ -60,16 +59,28 @@
 
 <!--<div id="image"></div>-->
 <div class="content">
-    
-    <div id="image">
-        <img src="TRACK_INFO_IMAGE_URL"/>
-    </div>
-    <h1>TRACK_INFO_TITLE</h1>
-    <h2>TRACK_INFO_ARTIST</h2>
-    <h3>TRACK_INFO_ALBUM</h3>
-    <hr/>
-    
-    <div>TRACK_INFO_LYRICS_HTML</div>
+
+    <table height=100%>
+        <tr>
+            <td width=40% align=center valign=middle>
+                <div id="image">
+                    <img src="TRACK_INFO_IMAGE_URL"/>
+                    <hr/>
+                    <h1>TRACK_INFO_TITLE</h1>
+                    <h2>TRACK_INFO_ARTIST</h2>
+                    <h3>TRACK_INFO_ALBUM</h3>
+
+                </div>
+            </td>
+            <td width=60% align=center valign=middle>
+                <div id="lyrics"
+                     style="margin-left:auto; margin-right:auto; width:800px; height: 90%; overflow-y: scroll;">
+                    TRACK_INFO_LYRICS_HTML
+                </div>
+            </td>
+        </tr>
+    </table>
+
 
 </div>
 </body></html>

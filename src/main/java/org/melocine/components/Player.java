@@ -233,13 +233,12 @@ public class Player {
 
     private void randomizeListAfter(int after) {
         if (after >= nowPlaying.size() - 2) return;
-
-        int begin = after + 1;
         int end = nowPlaying.size();
-        int random = begin + new Random().nextInt(end - begin);
-        File track = nowPlaying.remove(random);
-        nowPlaying.add(begin, track);
-        randomizeListAfter(after+1);
+        for (int begin = after+1; begin < end; begin++){
+            int random = begin + new Random().nextInt(end - begin);
+            File track = nowPlaying.remove(random);
+            nowPlaying.add(begin, track);
+        }
     }
 
     private void removeTrackAt(int index) {

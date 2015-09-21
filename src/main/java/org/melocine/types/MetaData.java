@@ -38,7 +38,7 @@ public class MetaData implements Serializable {
     }
 
     private int convertToStarRating(String rating) {
-        return Integer.parseInt(rating) * MAX_RATING / 255;
+        return rating.isEmpty() ? 0 : Integer.parseInt(rating) * MAX_RATING / 255;
     }
 
 
